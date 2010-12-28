@@ -9,17 +9,29 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.JButton;
 
 import com.towel.reflec.ClassIntrospector;
 import com.towel.reflec.ClassIntrospector.AnnotatedElement;
 
-
-
+// @formatter:off
+/**
+ * Manager that maps an action or an <code>ActionListener</code> to a button.
+ * 
+ * @author Marcos A. Vasconcelos Junior
+ * @see <a href="https://github.com/MarkyVasconcelos/Towel/wiki/ActionManager">ActionManager wiki</a>
+ */
+// @formatter:on
 public class ActionManager {
 	private Object comp;
 	private Class<?> clazz;
 
+	/**
+	 * Creates an <code>ActionManager</code> that handles the events for the
+	 * given components.
+	 * 
+	 * @param comp
+	 *            the object that contains the annotated attributes
+	 */
 	public ActionManager(Object comp) {
 		clazz = comp.getClass();
 		this.comp = comp;
@@ -29,7 +41,7 @@ public class ActionManager {
 			AbstractButton button;
 			try {
 				ann.getElement().setAccessible(true);
-				button = (AbstractButton) (JButton) ann.getElement().get(comp);
+				button = (AbstractButton) ann.getElement().get(comp);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
@@ -43,7 +55,7 @@ public class ActionManager {
 			AbstractButton button;
 			try {
 				ann.getElement().setAccessible(true);
-				button = (AbstractButton) (JButton) ann.getElement().get(comp);
+				button = (AbstractButton) ann.getElement().get(comp);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
