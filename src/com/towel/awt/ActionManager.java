@@ -73,15 +73,17 @@ public class ActionManager implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		for (Action action : before)
+		for (Action action : before) {
 			action.doAction();
+		}
 		try {
 			map.get(arg0.getSource()).doAction();
 		} catch (StopException e) {
 			e.getCause().printStackTrace();
 		}
-		for (Action act : after)
+		for (Action act : after) {
 			act.doAction();
+		}
 	}
 
 	/**
@@ -108,6 +110,7 @@ public class ActionManager implements ActionListener {
 			this.cause = cause;
 		}
 
+		@Override
 		public Exception getCause() {
 			return cause;
 		}

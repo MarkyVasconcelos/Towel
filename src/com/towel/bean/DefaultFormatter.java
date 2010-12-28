@@ -1,7 +1,10 @@
 package com.towel.bean;
 
 /**
- *This formatter assume all Object are String.
+ * Default formatter that returns the same object passed as paramater to the
+ * methods.
+ * 
+ * @author Marcos A. Vasconcelos Junior
  */
 public class DefaultFormatter implements Formatter {
 	@Override
@@ -18,4 +21,4 @@ public class DefaultFormatter implements Formatter {
 	public String getName() {
 		return "obj_def";
 	}
-};
+}
