@@ -4,12 +4,24 @@ import com.towel.cfg.StringUtil;
 import com.towel.math.Expression;
 import com.towel.math.exp.Operator.Operands;
 
+/**
+ * Represents one or more operation nodes (a group of one or two operands and an
+ * operator).
+ * 
+ * @author Marcos A. Vasconcelos Junior
+ */
 public class Node {
 	private Operator operator = null;
 	private Node leftNode = null;
 	private Node rightNode = null;
 	private Double value = null;
 
+	/**
+	 * Create a Node using the given expression.
+	 * 
+	 * @param s
+	 *            the expression
+	 */
 	public Node(Expression s) {
 		this(s.getExpression(), s);
 	}
@@ -52,9 +64,9 @@ public class Node {
 					leftNode = new Node(s.substring(operator.getOperator()
 							.length()), exp);
 					return;
-				} else
-					throw new IllegalArgumentException(
-							"Error parsing. Missing brackets in '" + s + "'");
+				}
+				throw new IllegalArgumentException(
+						"Error parsing. Missing brackets in '" + s + "'");
 			} else if (startOperator > 0
 					&& operator.getType() == Operands.DOUBLE) {
 				leftNode = new Node(s.substring(0, startOperator), exp);
@@ -64,6 +76,15 @@ public class Node {
 		}
 	}
 
+	/**
+	 * Returns the operator starting at given index.
+	 * 
+	 * @param s
+	 *            the expression part
+	 * @param start
+	 *            the start index
+	 * @return the operator
+	 */
 	public Operator getOperator(String s, int start) {
 		Operator[] operators = Operator.values();
 		String next = getNextWord(s.substring(start));
@@ -74,6 +95,11 @@ public class Node {
 		return null;
 	}
 
+	/**
+	 * @param s
+	 *            the part of expression
+	 * @return the first word of this expression
+	 */
 	public String getNextWord(String s) {
 		int sLength = s.length();
 		for (int i = 1; i < sLength; i++) {
@@ -87,7 +113,9 @@ public class Node {
 	/**
 	 * Checks if there is any missing brackets
 	 * 
-	 * @return true if s is valid
+	 * @param s
+	 *            the operation to check
+	 * @return true if the operation is valid
 	 */
 	public boolean checkBrackets(String s) {
 		int brackets = 0;
@@ -102,6 +130,10 @@ public class Node {
 
 	/**
 	 * Returns a string that doesn't start with '+' or '-'
+	 * 
+	 * @param s
+	 *            the original String
+	 * @return the node with zero at start
 	 */
 	public String addZero(String s) {
 		if (s.startsWith("+") || s.startsWith("-"))
@@ -110,7 +142,7 @@ public class Node {
 	}
 
 	/**
-	 * Trace the expresion graph
+	 * Trace the expression graph.
 	 */
 	public void trace() {
 		System.out.println(value != null ? value : operator.getOperator());
@@ -122,38 +154,70 @@ public class Node {
 		}
 	}
 
+	/**
+	 * @return <code>true</code> if there is one or more children,
+	 *         <code>false</code> otherwise
+	 */
 	public boolean hasChild() {
 		return leftNode != null || rightNode != null;
 	}
 
+	/**
+	 * @return <code>true</code> if there the operator is set,
+	 *         <code>false</code> otherwise
+	 */
 	public boolean hasOperator() {
 		return operator != null;
 	}
 
+	/**
+	 * @return <code>true</code> if there is one a left node, <code>false</code>
+	 *         otherwise
+	 */
 	public boolean hasLeft() {
 		return leftNode != null;
 	}
 
+	/**
+	 * @return the left node
+	 */
 	public Node getLeft() {
 		return leftNode;
 	}
 
+	/**
+	 * @return <code>true</code> if there is one a right node,
+	 *         <code>false</code> otherwise
+	 */
 	public boolean hasRight() {
 		return rightNode != null;
 	}
 
+	/**
+	 * @return the right node
+	 */
 	public Node getRight() {
 		return rightNode;
 	}
 
+	/**
+	 * @return the operator
+	 */
 	public Operator getOperator() {
 		return operator;
 	}
 
+	/**
+	 * @return the value of this node
+	 */
 	public Double getValue() {
 		return value;
 	}
 
+	/**
+	 * @param f
+	 *            the new node's value
+	 */
 	public void setValue(Double f) {
 		value = f;
 	}
@@ -168,7 +232,6 @@ public class Node {
 		// only '1+1' is returned.
 		if (res != s)
 			return removeBrackets(res);
-		else
-			return res;
+		return res;
 	}
 }
