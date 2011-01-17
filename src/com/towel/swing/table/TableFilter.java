@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -112,7 +113,20 @@ public class TableFilter extends AbstractTableModel
     private JTableHeader header;
 
     /**
-     * Table filter contructor. This is the only way to set a TableHeader and a
+     * Table filter constructor. This is the only way to set a TableHeader and a
+     * TableModel to this TableFilter.The class will use TableHeader to create
+     * a PopUp menu and draw a Button on Table, and the TableModel to get the
+     * table data.
+     * 
+     * @param table JTable to create the Filter on. 
+     */
+    public TableFilter(JTable table){
+    	this(table.getTableHeader(), table.getModel());
+    	table.setModel(this);
+    }
+    
+    /**
+     * Table filter constructor. This is the only way to set a TableHeader and a
      * TableModel to this TableFilter. The class will use TableHeader to create
      * a PopUp menu and draw a Button on Table, and the TableModel to get the
      * table data.

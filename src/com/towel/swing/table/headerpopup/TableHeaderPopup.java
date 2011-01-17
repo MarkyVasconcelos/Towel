@@ -170,10 +170,10 @@ public class TableHeaderPopup
 
             if (modified.get(modelIndex) == null || !modified.get(modelIndex))
                 button.setIcon(new ImageIcon(getClass().getResource(
-                        "/util/gui/images/down.gif")));
+                        "/res/gui/down.gif")));
             else
                 button.setIcon(new ImageIcon(getClass().getResource(
-                        "/util/gui/images/down_red.gif")));
+                        "/res/gui/down_red.gif")));
 
             button.setPreferredSize(new Dimension(16, 16));
             button.setMaximumSize(new Dimension(16, 16));
