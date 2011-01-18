@@ -10,7 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -106,9 +108,13 @@ public class JTableView extends JPanel {
 			}
 		});
 
-		// JTableHeader mainHeader = getMainTable().getTableHeader();
-		// JTableHeader footerHeader = footerTable.getTableHeader();
+		JTableHeader mainHeader = getMainTable().getTableHeader();
+		JTableHeader footerHeader = footerTable.getTableHeader();
 
+		MouseEventDispatcher adapter = new MouseEventDispatcher(footerHeader);
+		mainHeader.addMouseListener(adapter);
+		mainHeader.addMouseMotionListener(adapter);
+		
 		// for (MouseListener list : mainHeader.getMouseListeners())
 		// footerHeader.addMouseListener(list);
 		//
@@ -146,5 +152,59 @@ public class JTableView extends JPanel {
 
 	public JTable getMainTable() {
 		return mainTable;
+	}
+
+	public class MouseEventDispatcher implements MouseListener,
+			MouseMotionListener {
+		JComponent comp;
+
+		public MouseEventDispatcher(JComponent comp) {
+			this.comp = comp;
+			System.out.println("MouseListeners: "+ comp.getMouseListeners().length);
+			System.out.println("MouseMotionListeners: "+ comp.getMouseMotionListeners().length);
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			for (MouseMotionListener listener : comp.getMouseMotionListeners())
+				listener.mouseDragged(e);
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			for (MouseMotionListener listener : comp.getMouseMotionListeners())
+				listener.mouseMoved(e);
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			for (MouseListener listener : comp.getMouseListeners())
+				listener.mouseClicked(e);
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			for (MouseListener listener : comp.getMouseListeners())
+				listener.mousePressed(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			for (MouseListener listener : comp.getMouseListeners())
+				listener.mouseReleased(e);
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			for (MouseListener listener : comp.getMouseListeners())
+				listener.mouseEntered(e);
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			for (MouseListener listener : comp.getMouseListeners())
+				listener.mouseExited(e);
+		}
+
 	}
 }
