@@ -3,17 +3,18 @@ package com.towel.swing.table;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import com.towel.el.FieldResolver;
 import com.towel.el.annotation.AnnotationResolver;
 
-
-
 /**
- *A TableModel based on reflection.
+ * A TableModel based on reflection.
  * 
- *@author Marcos Vasconcelos
+ * @author Marcos Vasconcelos
  */
 public class ObjectTableModel<T> extends AbstractTableModel {
 	private List<T> data;
@@ -70,6 +71,9 @@ public class ObjectTableModel<T> extends AbstractTableModel {
 		try {
 			Object obj = data.get(arg0);
 			fields[arg1].setValue(obj, value);
+
+			for (TableModelListener list : getTableModelListeners())
+				list.tableChanged(new TableModelEvent(this, arg0, arg1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -138,16 +142,16 @@ public class ObjectTableModel<T> extends AbstractTableModel {
 	public int indexOf(T obj) {
 		return data.indexOf(obj);
 	}
-	
-	public boolean isEmpty(){
+
+	public boolean isEmpty() {
 		return data.isEmpty();
 	}
-	
+
 	public FieldResolver getColumnResolver(int colIndex) {
 		return fields[colIndex];
 	}
-	
-	public Class<?> getColumnClass(int col){
+
+	public Class<?> getColumnClass(int col) {
 		return getColumnResolver(col).getFieldType();
 	}
 }

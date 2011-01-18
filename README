@@ -1,4 +1,4 @@
-Towel, is a project to easy some common tasks for Swing developers such as:
+Towel, is a project to make some common tasks easy for Swing developers such as:
 Models for Components;
 JTable related decorators;
 Component binder for Forms;

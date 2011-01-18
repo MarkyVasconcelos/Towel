@@ -16,6 +16,12 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
@@ -30,18 +36,18 @@ public class JTableView extends JPanel {
 		this.setMainModel(model);
 		this.setFooterModel(new AggregateModel(model));
 
-		JTable footerTable = new JTable(model);
+		setMainTable(new JTable(model));
+		mainTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		mainTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		final JTable footerTable = new JTable(getFooterModel());
 		footerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		footerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		setMainTable(new JTable(getFooterModel()));
-		getMainTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		getMainTable().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		JScrollPane scroll = new JScrollPane(footerTable);
+		JScrollPane scroll = new JScrollPane(mainTable);
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		JScrollPane fixedScroll = new JScrollPane(getMainTable()) {
+		JScrollPane fixedScroll = new JScrollPane(footerTable) {
 			public void setColumnHeaderView(Component view) {
 			} // work around
 		};
@@ -64,17 +70,54 @@ public class JTableView extends JPanel {
 			}
 		});
 
-		JTableHeader mainHeader = getMainTable().getTableHeader();
-		JTableHeader footerHeader = footerTable.getTableHeader();
+		getMainTable().getColumnModel().addColumnModelListener(
+				new TableColumnModelListener() {
+					@Override
+					public void columnSelectionChanged(ListSelectionEvent e) {
+						footerTable.columnSelectionChanged(e);
+					}
 
-		for (MouseListener list : mainHeader.getMouseListeners())
-			footerHeader.addMouseListener(list);
-		
-		for (MouseMotionListener list : mainHeader.getMouseMotionListeners())
-			footerHeader.addMouseMotionListener(list);
+					@Override
+					public void columnRemoved(TableColumnModelEvent e) {
+						footerTable.columnRemoved(e);
+					}
+
+					@Override
+					public void columnMoved(TableColumnModelEvent e) {
+						footerTable.getColumnModel().moveColumn(
+								e.getFromIndex(), e.getToIndex());
+					}
+
+					@Override
+					public void columnMarginChanged(ChangeEvent e) {
+						footerTable.columnMarginChanged(e);
+					}
+
+					@Override
+					public void columnAdded(TableColumnModelEvent e) {
+						footerTable.columnAdded(e);
+					}
+				});
+
+		getMainModel().addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				footerModel.fireTableDataChanged();
+			}
+		});
+
+		// JTableHeader mainHeader = getMainTable().getTableHeader();
+		// JTableHeader footerHeader = footerTable.getTableHeader();
+
+		// for (MouseListener list : mainHeader.getMouseListeners())
+		// footerHeader.addMouseListener(list);
+		//
+		// for (MouseMotionListener list : mainHeader.getMouseMotionListeners())
+		// footerHeader.addMouseMotionListener(list);
 
 		// scroll.setPreferredSize(new Dimension(500, 80));
-		fixedScroll.setPreferredSize(new Dimension(400, 52));
+		// fixedScroll.setPreferredSize(new Dimension(400, 52));
+		fixedScroll.setPreferredSize(new Dimension(0, 40));
 		// fixedScroll.setMinimumSize(new Dimension(20, 0));
 		// fixedScroll.setMaximumSize(new Dimension(20, 1024));
 		add(scroll, BorderLayout.CENTER);
