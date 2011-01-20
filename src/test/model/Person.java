@@ -18,6 +18,9 @@ public class Person {
 	private boolean live;
 	@Resolvable(colName = "Birth", formatter = DateFormatter.class)
 	private GregorianCalendar birth;
+	@Resolvable
+	private double money;
+
 
 	public Person(String name, int age, boolean live, String birth) {
 		this.name = name;
@@ -72,5 +75,14 @@ public class Person {
 
 	public String toString() {
 		return "Name: " + name + " age: " + age;
+	}
+	
+
+	public double getMoney() {
+		return money;
+	}
+
+	public void setMoney(double money) {
+		this.money = money;
 	}
 }
