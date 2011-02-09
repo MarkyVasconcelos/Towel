@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 public class LoopImage {
 	private BufferedImage imgs[];
 	private int currentIndex;
-	private long tick;
+	public long tick;
 	private long lastTick;
 
 	public LoopImage(long tick, BufferedImage... imgs) {
@@ -31,5 +31,10 @@ public class LoopImage {
 		lastTick = currentTick;
 		if (currentIndex == imgs.length)
 			currentIndex = 0;
+	}
+
+	public BufferedImage getCurrent() {
+		updateTick();
+		return imgs[currentIndex];
 	}
 }

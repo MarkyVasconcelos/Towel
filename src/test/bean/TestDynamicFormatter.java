@@ -40,7 +40,7 @@ public class TestDynamicFormatter {
 		d.addField(new FieldResolver(Person.class,"age"));
 		myPojoMock = new Person("Felipe", 23,true, "20101990");
 		
-		d.setSeparetor(" ");
+		d.setSeparator(" ");
 
 		s = d.format(myPojoMock);
 

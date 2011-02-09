@@ -12,6 +12,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import com.towel.img.LoopImage;
+
 /**
  * A panel that contains a background image. The background image is
  * automatically sized to fit in the panel.
@@ -19,7 +21,8 @@ import javax.swing.JPanel;
  * @author Vinicius Godoy
  */
 public class JImagePanel extends JPanel {
-	private BufferedImage image = null;
+	private LoopImage images;
+	// private BufferedImage image = null;
 	private FillType fillType = FillType.RESIZE;
 
 	/**
@@ -29,7 +32,22 @@ public class JImagePanel extends JPanel {
 	 *            The background image.
 	 */
 	public JImagePanel(BufferedImage img) {
-		setImage(img);
+		// setImage(img);
+		images = new LoopImage(0, img);
+	}
+
+	/**
+	 * Creates a new panel with the given background images looping at each tick
+	 * interval.
+	 * 
+	 * @param tick
+	 *            the time between swap the image
+	 * @param imgs
+	 *            The background images.
+	 */
+	public JImagePanel(long tick, BufferedImage... imgs) {
+		images = new LoopImage(tick, imgs);
+		new Looper().start();
 	}
 
 	/**
@@ -42,6 +60,13 @@ public class JImagePanel extends JPanel {
 	 */
 	public JImagePanel(File imgSrc) throws IOException {
 		this(ImageIO.read(imgSrc));
+	}
+
+	/**
+	 * Default constructor, should be used only for sub-classes
+	 */
+	protected JImagePanel() {
+
 	}
 
 	/**
@@ -66,7 +91,8 @@ public class JImagePanel extends JPanel {
 		if (img == null)
 			throw new NullPointerException("Buffered image cannot be null!");
 
-		this.image = img;
+		this.images = new LoopImage(0, img);
+		// this.image = img;
 		invalidate();
 	}
 
@@ -100,14 +126,14 @@ public class JImagePanel extends JPanel {
 	 * @return The associated image.
 	 */
 	public BufferedImage getImage() {
-		return image;
+		return images.getCurrent();
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g.create();
-		fillType.drawImage(this, g2d, image);
+		fillType.drawImage(this, g2d, images.getCurrent());
 		g2d.dispose();
 	}
 
@@ -179,5 +205,22 @@ public class JImagePanel extends JPanel {
 
 		public abstract void drawImage(JPanel panel, Graphics2D g2d,
 				BufferedImage image);
+	}
+
+	private class Looper extends Thread {
+		public Looper() {
+			setDaemon(true);
+		}
+
+		public void run() {
+			while (true) {
+				repaint();
+				try {
+					sleep(images.tick);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

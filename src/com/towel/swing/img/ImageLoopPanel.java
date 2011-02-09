@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import com.towel.img.LoopImage;
 
 
-
+@Deprecated
 public class ImageLoopPanel extends JPanel implements Runnable {
 	private LoopImage lImg;
 	private long tick;

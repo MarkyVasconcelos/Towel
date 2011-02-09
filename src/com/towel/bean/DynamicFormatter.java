@@ -62,7 +62,7 @@ public class DynamicFormatter<T> implements Formatter {
 	/**
 	 * Text to separate the values if theres more than a field.
 	 */
-	protected String separetor;
+	protected String separator;
 
 	/**
 	 * Contrutor
@@ -83,36 +83,18 @@ public class DynamicFormatter<T> implements Formatter {
 	 * @param separator
 	 *            - Text to use between the fields values.
 	 */
-	public DynamicFormatter(Class<T> t, String separator) {
+	public DynamicFormatter(Class<T> t, String separxator) {
 		this(t);
 		this.clazz = t;
 		// this.fieldList.add(new FieldResolver(t, fieldName));
-		setSeparetor(separator);
-	}
-
-	/**
-	 * Constructor
-	 * 
-	 * @param t
-	 *            - Class wich this formatter was created for
-	 * @param fiedlNameList
-	 *            - Fields to build the text in the format method
-	 * @param separetor
-	 *            - Text to use between the fields values.
-	 */
-	public DynamicFormatter(Class<T> t, List<FieldResolver> fiedlNameList,
-			String separetor) {
-		this(t);
-		this.clazz = t;
-		this.fieldList.addAll(fiedlNameList);
-		this.separetor = separetor;
+		setSeparator(separator);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public Object format(final Object arg0) {
-		if (this.separetor == null) {
-			this.separetor = "";
+		if (this.separator == null) {
+			this.separator = "";
 		}
 		if (arg0 == null) {
 			return "";
@@ -124,7 +106,7 @@ public class DynamicFormatter<T> implements Formatter {
 			for (int i = 0; i < this.fieldList.size(); i++) {
 				sb.append(fieldList.get(i).getValue(obj));
 				if (!((i + 1) == this.fieldList.size())) {
-					sb.append(this.separetor);
+					sb.append(this.separator);
 				}
 			}
 
@@ -152,20 +134,20 @@ public class DynamicFormatter<T> implements Formatter {
 	/**
 	 * Returns the text to use as separator
 	 * 
-	 * @return the separetor
+	 * @return the separator
 	 */
-	public String getSeparetor() {
-		return separetor;
+	public String getSeparator() {
+		return separator;
 	}
 
 	/**
 	 * Get the text to use between the fields values.
 	 * 
-	 * @param separetor
+	 * @param separator
 	 *            the separetor to set
 	 */
-	public void setSeparetor(String separetor) {
-		this.separetor = separetor;
+	public void setSeparator(String separator) {
+		this.separator = separator;
 	}
 
 	/**
