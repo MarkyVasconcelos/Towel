@@ -17,22 +17,22 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import com.towel.awt.Action;
-import com.towel.awt.ActionManager;
 import com.towel.other.Pair;
 import com.towel.role.RoleManager;
 import com.towel.swing.ModalWindow;
 
-
-
+@SuppressWarnings("unused")
 public class LoginScreen {
 	private JDialog screen;
 	private JTextField username;
 	private JPasswordField password;
-	private JButton login, close;
+	@com.towel.awt.ann.Action(method = "login")
+	private JButton login;
+	@com.towel.awt.ann.Action(method = "close")
+	private JButton close;
 	private LoginListener listener;
 	private List<Pair<Manager, Object>> list;
-	private WindowListener wListener = new WindowAdapter(){
+	private WindowListener wListener = new WindowAdapter() {
 		@Override
 		public void windowClosed(WindowEvent arg0) {
 			listener.close();
@@ -43,8 +43,6 @@ public class LoginScreen {
 			listener.close();
 		}
 	};
-
-	private ActionManager manager;
 
 	public LoginScreen(Component parent) {
 		list = new ArrayList<Pair<Manager, Object>>();
@@ -62,9 +60,7 @@ public class LoginScreen {
 
 		screen.getRootPane().setDefaultButton(login);
 
-		manager = new ActionManager();
-		manager.manage(login, loginAction);
-		manager.manage(close, closeAction);
+		new com.towel.awt.ann.ActionManager(this);
 
 		screen.addWindowListener(wListener);
 	}
@@ -82,32 +78,26 @@ public class LoginScreen {
 		this.listener = listener;
 	}
 
-	private Action closeAction = new Action() {
-		@Override
-		public void doAction() {
-			listener.close();
-		}
-	};
+	private void close() {
+		listener.close();
+	}
 
-	private Action loginAction = new Action() {
-		@Override
-		public void doAction() {
-			if (listener == null)
-				return;
-			try {
-				User user = listener.login(username.getText(), new String(
-						password.getPassword()));
+	private void login() {
+		if (listener == null)
+			return;
+		try {
+			User user = listener.login(username.getText(),
+					new String(password.getPassword()));
 
-				RoleManager manager = new RoleManager(user);
-				for (Pair<Manager, Object> pair : list)
-					pair.getFirst().manage(manager, pair.getSecond());
-				screen.removeWindowListener(wListener);
-				screen.dispose();
-			} catch (CannotLoginException e) {
-				JOptionPane.showMessageDialog(screen, e.getMessage());
-			}
+			RoleManager manager = new RoleManager(user);
+			for (Pair<Manager, Object> pair : list)
+				pair.getFirst().manage(manager, pair.getSecond());
+			screen.removeWindowListener(wListener);
+			screen.dispose();
+		} catch (CannotLoginException e) {
+			JOptionPane.showMessageDialog(screen, e.getMessage());
 		}
-	};
+	}
 
 	public enum Manager {
 		Annotated {

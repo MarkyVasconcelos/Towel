@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import com.towel.el.FieldResolver;
@@ -140,9 +138,6 @@ public class ObjectTableModel<T> extends AbstractTableModel {
 		try {
 			Object obj = data.get(arg0);
 			fields[arg1].setValue(obj, value);
-
-			for (TableModelListener list : getTableModelListeners())
-				list.tableChanged(new TableModelEvent(this, arg0, arg1));
 
 			fireTableCellUpdated(arg0, arg1);
 		} catch (Exception e) {
