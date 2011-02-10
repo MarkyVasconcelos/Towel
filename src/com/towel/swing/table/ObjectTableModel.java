@@ -2,6 +2,7 @@ package com.towel.swing.table;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -14,7 +15,8 @@ import com.towel.el.annotation.AnnotationResolver;
  * 
  * @author Marcos Vasconcelos
  */
-public class ObjectTableModel<T> extends AbstractTableModel {
+public class ObjectTableModel<T> extends AbstractTableModel implements
+		Iterable<T> {
 	private List<T> data;
 	private FieldResolver fields[];
 	private boolean editDefault;
@@ -323,5 +325,10 @@ public class ObjectTableModel<T> extends AbstractTableModel {
 	 */
 	public Class<?> getColumnClass(int col) {
 		return getColumnResolver(col).getFieldType();
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		return data.iterator();
 	}
 }
