@@ -83,7 +83,7 @@ public class DynamicFormatter<T> implements Formatter {
 	 * @param separator
 	 *            - Text to use between the fields values.
 	 */
-	public DynamicFormatter(Class<T> t, String separxator) {
+	public DynamicFormatter(Class<T> t, String separator) {
 		this(t);
 		this.clazz = t;
 		// this.fieldList.add(new FieldResolver(t, fieldName));

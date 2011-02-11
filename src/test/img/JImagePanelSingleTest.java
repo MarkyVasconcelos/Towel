@@ -15,7 +15,7 @@ public class JImagePanelSingleTest {
 		JImagePanel panel = new JImagePanel(
 				loadImage("/home/marcos/imgs/1.png"));
 		
-		panel.setFillType(JImagePanel.FillType.CENTER);
+		panel.setFillType(JImagePanel.FillType.SIDE_BY_SIDE);
 
 		JFrame frame = new JFrame();
 		frame.setPreferredSize(new Dimension(100, 100));
