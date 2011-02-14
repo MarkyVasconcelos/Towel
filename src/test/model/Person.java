@@ -34,6 +34,13 @@ public class Person {
 		}
 	}
 
+
+	public Person(String name, int age, boolean live) {
+		this.name = name;
+		this.age = age;
+		this.live = live;
+	}
+	
 	public Person(double d) {
 		this.age = (int) d;
 	}
