@@ -86,10 +86,14 @@ public class FieldHandler implements FieldAccessHandler {
 		try {
 			f = clazz.getDeclaredField(fieldName);
 		} catch (NoSuchFieldException e) {
-			NotResolvableFieldException ex = new NotResolvableFieldException(
-					fieldName, clazz);
-			ex.setStackTrace(e.getStackTrace());
-			throw ex;
+			if(clazz.getSuperclass() == null){
+				NotResolvableFieldException ex = new NotResolvableFieldException(
+						fieldName, clazz);
+				ex.setStackTrace(e.getStackTrace());
+				throw ex;
+			}
+			
+			return getAcessibleField(clazz.getSuperclass(), fieldName);
 		}
 		f.setAccessible(true);
 		return f;

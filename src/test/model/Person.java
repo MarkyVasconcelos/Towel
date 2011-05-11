@@ -7,10 +7,8 @@ import java.util.GregorianCalendar;
 import com.towel.bean.Formatter;
 import com.towel.el.annotation.Resolvable;
 
-
-
 public class Person {
-	@Resolvable(colName = "Name")
+//	@Resolvable(colName = "Name")
 	private String name;
 	@Resolvable(colName = "Age")
 	private int age;
@@ -20,6 +18,7 @@ public class Person {
 	private GregorianCalendar birth;
 	@Resolvable
 	private double money;
+	private Person parent; 
 
 
 	public Person(String name, int age, boolean live, String birth) {
@@ -91,5 +90,15 @@ public class Person {
 
 	public void setMoney(double money) {
 		this.money = money;
+	}
+
+
+	public void setParent(Person parent) {
+		this.parent = parent;
+	}
+
+
+	public Person getParent() {
+		return parent;
 	}
 }

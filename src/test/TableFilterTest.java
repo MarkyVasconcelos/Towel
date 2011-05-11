@@ -1,15 +1,13 @@
 package test;
 
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import test.model.Person;
 import test.model.PreData;
 
-import com.towel.collections.aggr.FuncConcat;
-import com.towel.collections.aggr.FuncSum;
 import com.towel.el.annotation.AnnotationResolver;
-import com.towel.swing.table.JTableView;
 import com.towel.swing.table.ObjectTableModel;
 import com.towel.swing.table.TableFilter;
 
@@ -26,16 +24,16 @@ public class TableFilterTest {
 		
 		model.addAll(new PreData().getSampleList());
 		
-		JTableView view = new JTableView(model);
-		view.getFooterModel().setFunction(0, new FuncConcat("-"));
-		view.getFooterModel().setFunction(1, new FuncSum());
+//		JTableView view = new JTableView(model);
+//		view.getFooterModel().setFunction(0, new FuncConcat("-"));
+//		view.getFooterModel().setFunction(1, new FuncSum());
 		
 		
-//		JScrollPane pane = new JScrollPane();
-//		pane.setViewportView(table);
+		JScrollPane pane = new JScrollPane();
+		pane.setViewportView(table);
 		
 		JFrame frame = new JFrame();
-		frame.getContentPane().add(view);
+		frame.getContentPane().add(pane);
 		
 
 		frame.pack();

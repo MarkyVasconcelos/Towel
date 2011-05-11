@@ -1,6 +1,8 @@
 package test.img;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +14,13 @@ import com.towel.swing.img.JImagePanel;
 
 public class JImagePanelSingleTest {
 	public static void main(String[] args) throws Throwable {
-		JImagePanel panel = new JImagePanel(
-				loadImage("/home/marcos/imgs/1.png"));
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+		Graphics2D g = img.createGraphics();
+		g.setColor(Color.white);
+		g.fillRect(0, 0, 1, 1);
+		g.dispose();
+		
+		JImagePanel panel = new JImagePanel(img);
 		
 		panel.setFillType(JImagePanel.FillType.SIDE_BY_SIDE);
 

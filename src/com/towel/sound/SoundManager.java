@@ -63,7 +63,7 @@ public class SoundManager
     {
         int max = getMaxSimultaneousSounds(format);
 
-        if (max == AudioSystem.NOT_SPECIFIED)
+        if (max == AudioSystem.NOT_SPECIFIED || max == 0)
             return Executors.newCachedThreadPool(threadFactory);
 
         if (max == 1)
