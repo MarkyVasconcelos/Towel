@@ -18,8 +18,7 @@ public class ClassIntrospector {
 		List<AnnotatedElement<Field, E>> list = new ArrayList<AnnotatedElement<Field, E>>();
 		for (Field f : clazz.getFields())
 			if (f.isAnnotationPresent(ann))
-				list.add(new AnnotatedElement<Field, E>(f, f
-						.getAnnotation(ann)));
+				list.add(new AnnotatedElement<Field, E>(f, f.getAnnotation(ann)));
 
 		return list;
 	}
@@ -29,8 +28,7 @@ public class ClassIntrospector {
 		List<AnnotatedElement<Field, E>> list = new ArrayList<AnnotatedElement<Field, E>>();
 		for (Field f : clazz.getDeclaredFields())
 			if (f.isAnnotationPresent(ann))
-				list.add(new AnnotatedElement<Field, E>(f, f
-						.getAnnotation(ann)));
+				list.add(new AnnotatedElement<Field, E>(f, f.getAnnotation(ann)));
 
 		return list;
 	}
@@ -56,17 +54,58 @@ public class ClassIntrospector {
 
 		return list;
 	}
-	
 
-	public Class<?> getMethodReturnClass(String string,Class<?> arg) {
-		try{
+	public Class<?> getMethodReturnClass(String string, Class<?> arg) {
+		try {
 			Method m = clazz.getDeclaredMethod(string, arg);
 			return m.getReturnType();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			return String.class;
 		}
 	}
-	
+
+	/**
+	 * This searchs for the declared field
+	 * 
+	 * @return an AccesibleField
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
+	 */
+	public Field getField(String fieldName) throws NoSuchFieldException {
+		Field f = null;
+		try {
+			f = clazz.getDeclaredField(fieldName);
+		} catch (NoSuchFieldException e) {
+			return getField(fieldName, clazz.getSuperclass());
+		}
+		
+		f.setAccessible(true);
+		return f;
+	}
+
+	/**
+	 * This searchs for the declared field
+	 * 
+	 * @return an AccesibleField
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
+	 */
+	private Field getField(String fieldName, Class<?> clazz)
+			throws NoSuchFieldException {
+		if (clazz == null)
+			throw new NoSuchFieldException();
+
+		Field f = null;
+		try {
+			f = clazz.getDeclaredField(fieldName);
+		} catch (NoSuchFieldException e) {
+			return getField(fieldName, clazz.getSuperclass());
+		}
+
+		f.setAccessible(true);
+		return f;
+	}
+
 	public static class AnnotatedElement<T, K extends Annotation> {
 		private T comp;
 		private K annotation;

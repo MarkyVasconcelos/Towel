@@ -6,6 +6,7 @@ import com.towel.bean.Formatter;
 import com.towel.el.FieldResolver;
 import com.towel.el.handler.BlankHandler;
 import com.towel.el.handler.FieldAccessHandler;
+import com.towel.reflec.ClassIntrospector;
 
 
 
@@ -53,13 +54,15 @@ public class AnnotationResolver {
 				if (fieldN.contains("."))
 					resolvers[i] = resolve(fieldN, clazz, colName);
 				else {
-					Field field = clazz.getDeclaredField(fieldN);
+					Field field = new ClassIntrospector(clazz).getField(fieldN);
 					if (field.isAnnotationPresent(Resolvable.class)) {
 						Resolvable resolvable = field
 								.getAnnotation(Resolvable.class);
 
 						resolvers[i] = resolve(resolvable, field.getName(),
 								clazz, colName);
+					}else{
+						resolvers[i] = resolve(fieldN, clazz, colName);
 					}
 				}
 			} catch (Exception e) {
@@ -89,7 +92,7 @@ public class AnnotationResolver {
 			IllegalAccessException, SecurityException, NoSuchFieldException {
 		String fields[] = fieldName.split("[.]");
 
-		Field last = clazz.getDeclaredField(fields[0]);
+		Field last = new ClassIntrospector(clazz).getField(fields[0]);
 		for (int i = 1; i < fields.length; i++)
 			last = last.getType().getDeclaredField(fields[i]);
 

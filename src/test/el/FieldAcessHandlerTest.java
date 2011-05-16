@@ -56,6 +56,23 @@ public class FieldAcessHandlerTest {
 		System.out.println(res[0].getValue(p).equals("Mark"));
 	}
 
+	public void testAnnotationResolverInner() {
+		Person p = new Person("Mark", 19);
+		p.setParent(new Person("Markk", 40));
+
+		AnnotationResolver solver = new AnnotationResolver(Person.class);
+		FieldResolver[] res = solver.resolve("parent.name");
+		System.out.println(res[0].getValue(p).equals("Markk"));
+	}
+	
+	public void testAnnotationResolverHierarq() {
+		EPerson p = new EPerson("Mark", 19);
+
+		AnnotationResolver solver = new AnnotationResolver(EPerson.class);
+		FieldResolver[] res = solver.resolve("name");
+		System.out.println(res[0].getValue(p).equals("Mark"));
+	}
+
 	public static void main(String[] args) {
 		FieldAcessHandlerTest tests = new FieldAcessHandlerTest();
 		tests.testFieldAccess();
@@ -63,5 +80,7 @@ public class FieldAcessHandlerTest {
 		tests.testHierarchyFieldAccess();
 		tests.testHierarchyInnerFieldAccess();
 		tests.testAnnotationResolver();
+		tests.testAnnotationResolverInner();
+		tests.testAnnotationResolverHierarq();
 	}
 }
