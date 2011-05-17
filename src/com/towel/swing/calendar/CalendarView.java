@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JWindow;
 
 import com.towel.time.Data;
 
@@ -32,11 +33,11 @@ public class CalendarView extends JPanel implements KeyListener,
 	private boolean validDate = true;
 	private boolean modified = false;
 	private DatePicker cal;
-	private JButton bto = new JButton();
-	private JTextField txt = new JTextField();
-	private int xCal, yCal;
-	private JPanel glass;
+	private JButton button;
+	private JTextField txt;
 	private int cont = 0;
+	
+	private JWindow glassPane;
 
 	/*
 	 * variaveis usadas pelas tela que existem data da validade do cartão
@@ -64,65 +65,47 @@ public class CalendarView extends JPanel implements KeyListener,
 
 	/**
 	 * 
-	 * @param x
-	 *            - Column
-	 * @param y
-	 *            - Line
 	 * @param xCal
 	 *            - largura Frame
 	 * @paal - altura Applet Frame
 	 * @param JPanel
 	 *            - referencia do glassPane
 	 */
-	public CalendarView(int x, int y, int xCal, int yCal, JPanel glass) {
+	public CalendarView() {
+		txt = new JTextField();
+		button = new JButton();
+		
+		glassPane = new JWindow();
 
-		this.xCal = xCal;
-		this.yCal = yCal;
-		this.glass = glass;
-		try {
-			jbInit();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		setBounds(x, y, 105, 21);
-		bto.addActionListener(this);
+		add(txt);
+		
+		init();
+
+		button.addActionListener(this);
 		txt.addKeyListener(this);
 		txt.addFocusListener(this);
 
 	}
 
-	public CalendarView(int x, int y, int xCal, int yCal, JPanel glass,
-			boolean mesano, String d) {
+	public CalendarView(int xCal, int yCal, JPanel glass, boolean mesano,
+			String d) {
 		cadmesano = mesano;
 		data = d;
 
-		this.xCal = xCal;
-		this.yCal = yCal;
-		this.glass = glass;
-		try {
-			jbInit();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		setBounds(x, y, 105, 21);
+		init();
 		txt.addKeyListener(this);
 		txt.addFocusListener(this);
 	}
 
-	public CalendarView(int x, int y, int xCal, int yCal, JPanel glass,
-			boolean diames) {
+	public CalendarView(int xCal, int yCal, JPanel glass, boolean diames) {
 		caddiames = diames;
 
-		this.xCal = xCal;
-		this.yCal = yCal;
-		this.glass = glass;
-		jbInit();
-		setBounds(x, y, 105, 21);
+		init();
 		txt.addKeyListener(this);
 		txt.addFocusListener(this);
 	}
 
-	private void jbInit() {
+	private void init() {
 		if (cadmesano && !caddiames) {
 			txt.setPreferredSize(new Dimension(53, 21));
 			txt.setSelectionEnd(7);
@@ -130,14 +113,10 @@ public class CalendarView extends JPanel implements KeyListener,
 			txt.setMaximumSize(new Dimension(53, 21));
 			txt.setText("__/____");
 			txt.setColumns(7);
-			txt.setBounds(new Rectangle(0, 0, 53, 21));
-			bto.setFont(new Font("SansSerif", 0, 12));
-			bto.setBounds(new Rectangle(73, 0, 32, 21));
-			bto.setText("..");
-			bto.setFont(new Font("SansSerif", Font.BOLD, 12));
-			this.setLayout(null);
-			this.add(txt, null);
-			this.add(bto, null);
+			button.setFont(new Font("SansSerif", 0, 12));
+			button.setText("..");
+			button.setFont(new Font("SansSerif", Font.BOLD, 12));
+			add(button);
 		} else if (caddiames && !cadmesano) {
 			txt.setPreferredSize(new Dimension(53, 21));
 			txt.setSelectionEnd(5);
@@ -145,14 +124,10 @@ public class CalendarView extends JPanel implements KeyListener,
 			txt.setMaximumSize(new Dimension(53, 21));
 			txt.setText("__/__");
 			txt.setColumns(5);
-			txt.setBounds(new Rectangle(0, 0, 53, 21));
-			bto.setFont(new Font("SansSerif", 0, 12));
-			bto.setBounds(new Rectangle(73, 0, 32, 21));
-			bto.setText("..");
-			bto.setFont(new Font("SansSerif", Font.BOLD, 12));
-			this.setLayout(null);
-			this.add(txt, null);
-			this.add(bto, null);
+			button.setFont(new Font("SansSerif", 0, 12));
+			button.setText("..");
+			button.setFont(new Font("SansSerif", Font.BOLD, 12));
+			add(button);
 		} else if (!cadmesano && !caddiames) {
 			txt.setPreferredSize(new Dimension(73, 21));
 			txt.setSelectionEnd(10);
@@ -160,14 +135,10 @@ public class CalendarView extends JPanel implements KeyListener,
 			txt.setMaximumSize(new Dimension(73, 21));
 			txt.setText("__/__/____");
 			txt.setColumns(10);
-			txt.setBounds(new Rectangle(0, 0, 73, 21));
-			bto.setFont(new Font("SansSerif", 0, 12));
-			bto.setBounds(new Rectangle(73, 0, 32, 21));
-			bto.setText("..");
-			bto.setFont(new Font("SansSerif", Font.BOLD, 12));
-			this.setLayout(null);
-			this.add(txt, null);
-			this.add(bto, null);
+			button.setFont(new Font("SansSerif", 0, 12));
+			button.setText("..");
+			button.setFont(new Font("SansSerif", Font.BOLD, 12));
+			add(button);
 		}
 	}
 
@@ -198,12 +169,20 @@ public class CalendarView extends JPanel implements KeyListener,
 			int mes = Integer.parseInt(strDia.substring(3, 5));
 			int ano = Integer.parseInt(strDia.substring(6, 10));
 
-			cal = new DatePicker(this, xCal, yCal, dia, mes, ano);
+			cal = new DatePicker(this,dia, mes, ano);
 		} else {
-			cal = new DatePicker(this, xCal, yCal, 0, 0, 0);
+			cal = new DatePicker(this,0, 0, 0);
 		}
-		glass.add(cal, null);
-		glass.setVisible(true);
+		
+		JPanel content = new JPanel();
+		content.setLayout(null);
+		content.add(cal);
+		
+		glassPane.setContentPane(content);
+		glassPane.setSize(140,150);
+		glassPane.setAlwaysOnTop(true);
+		glassPane.setLocation(button.getLocationOnScreen());
+		glassPane.setVisible(true);
 	} // ActionPerformed
 
 	/**
@@ -215,10 +194,10 @@ public class CalendarView extends JPanel implements KeyListener,
 	public void removeCalendario(String s) {
 		txt.setText(s);
 		modified = true;
-		glass.remove(cal);
+		glassPane.remove(cal);
 		cal = null;
-		glass.repaint();
-		glass.setVisible(false);
+		glassPane.repaint();
+		glassPane.setVisible(false);
 	}
 
 	/*
@@ -376,7 +355,7 @@ public class CalendarView extends JPanel implements KeyListener,
 
 	public void setEnabled(boolean t) {
 		txt.setEnabled(t);
-		bto.setEnabled(t);
+		button.setEnabled(t);
 	}
 
 	/**
@@ -386,6 +365,6 @@ public class CalendarView extends JPanel implements KeyListener,
 	 * @Param false = invivel
 	 **/
 	public void setBotaoVisivel(boolean t) {
-		bto.setVisible(t);
+		button.setVisible(t);
 	}
 }

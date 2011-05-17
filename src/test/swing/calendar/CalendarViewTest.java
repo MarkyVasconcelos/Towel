@@ -9,14 +9,11 @@ public class CalendarViewTest {
 	public CalendarViewTest() {
 		JFrame frame = new JFrame("CalendarView");
 		JPanel content=  new JPanel();
-		content.setLayout(null);
-		
-		CalendarView view = new CalendarView(50, 50, 150, 150, new JPanel(), true);
-		
+		CalendarView view = new CalendarView();
 		content.add(view);
 		
 		frame.setContentPane(content);
-		frame.setSize(400,200);
+		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
