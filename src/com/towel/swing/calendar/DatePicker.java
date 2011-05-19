@@ -16,21 +16,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Componente que monta um calendario
+ * DatePicker is a Component with displays a grid of days to be selected.
  */
 public class DatePicker extends JPanel {
 	private CalendarView calendar;
-	private BorderLabel lblMesAnte = new BorderLabel("<",
-			BorderFactory.createEtchedBorder());
-	private BorderLabel lblMesProx = new BorderLabel(">",
-			BorderFactory.createEtchedBorder());
-	private BorderLabel lblMesAno = new BorderLabel("",
-			BorderFactory.createEtchedBorder());
-	private JLabel lblDiasSemana = new JLabel(
+
+	private JLabel beforeMonth;
+	private JLabel nextMonth;
+	private JLabel yearLabel;
+
+	private JLabel weekDaysLabel = new JLabel(
 			"  D    S    T    Q    Q     S    S ");
-	private BorderLabel lblDias[] = new BorderLabel[42];
-	private JButton btoHoje = new JButton("Today");
-	private String data = "__/__/____";
+	private JLabel dayLabels[] = new JLabel[42];
+	private JButton today = new JButton("Today");
+	private String dateString = "__/__/____";
 	private int diaHoje;
 	private int mesHoje;
 	private int anoHoje;
@@ -75,6 +74,10 @@ public class DatePicker extends JPanel {
 		calendar = cal;
 		listener = new MouseListener();
 
+		beforeMonth = createLabelWithBorder("<");
+		nextMonth = createLabelWithBorder(">");
+		yearLabel = createLabelWithBorder("");
+
 		diaSelecionado = "0";
 
 		if (dia == 0) {
@@ -101,50 +104,50 @@ public class DatePicker extends JPanel {
 		Font fontHeader = new Font("SansSerif", Font.BOLD, 11);
 		Font fontCells = new Font("SansSerif", Font.PLAIN, 11);
 
-		lblMesAnte.setFont(fontHeader);
-		lblMesAnte.setBounds(0, 0, 15, 20);
-		lblMesAnte.setHorizontalAlignment(SwingConstants.CENTER);
-		lblMesAnte.setBackground(Color.lightGray);
-		lblMesAnte.setOpaque(true);
-		lblMesAnte.addMouseListener(listener);
-		add(lblMesAnte);
+		beforeMonth.setFont(fontHeader);
+		beforeMonth.setBounds(0, 0, 15, 20);
+		beforeMonth.setHorizontalAlignment(SwingConstants.CENTER);
+		beforeMonth.setBackground(Color.lightGray);
+		beforeMonth.setOpaque(true);
+		beforeMonth.addMouseListener(listener);
+		add(beforeMonth);
 
-		lblMesProx.setFont(fontHeader);
-		lblMesProx.setBounds(125, 0, 15, 20);
-		lblMesProx.setHorizontalAlignment(SwingConstants.CENTER);
-		lblMesProx.setBackground(Color.lightGray);
-		lblMesProx.setOpaque(true);
-		lblMesProx.addMouseListener(listener);
-		add(lblMesProx);
+		nextMonth.setFont(fontHeader);
+		nextMonth.setBounds(125, 0, 15, 20);
+		nextMonth.setHorizontalAlignment(SwingConstants.CENTER);
+		nextMonth.setBackground(Color.lightGray);
+		nextMonth.setOpaque(true);
+		nextMonth.addMouseListener(listener);
+		add(nextMonth);
 
-		lblMesAno.setFont(fontHeader);
-		lblMesAno.setBounds(15, 0, 110, 20);
-		lblMesAno.setHorizontalAlignment(SwingConstants.CENTER);
-		lblMesAno.setBackground(Color.lightGray);
-		lblMesAno.setOpaque(true);
-		lblMesAno.addMouseListener(listener);
-		lblMesAno.setText(nomeMesHoje);
-		add(lblMesAno);
+		yearLabel.setFont(fontHeader);
+		yearLabel.setBounds(15, 0, 110, 20);
+		yearLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		yearLabel.setBackground(Color.lightGray);
+		yearLabel.setOpaque(true);
+		yearLabel.addMouseListener(listener);
+		yearLabel.setText(nomeMesHoje);
+		add(yearLabel);
 
-		lblDiasSemana.setFont(fontHeader);
-		lblDiasSemana.setBounds(0, 20, 139, 15);
-		lblDiasSemana.setHorizontalAlignment(SwingConstants.CENTER);
-		lblDiasSemana.setBackground(new Color(63, 124, 124));
-		lblDiasSemana.setOpaque(true);
-		lblDiasSemana.addMouseListener(listener);
-		add(lblDiasSemana);
+		weekDaysLabel.setFont(fontHeader);
+		weekDaysLabel.setBounds(0, 20, 139, 15);
+		weekDaysLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		weekDaysLabel.setBackground(new Color(63, 124, 124));
+		weekDaysLabel.setOpaque(true);
+		weekDaysLabel.addMouseListener(listener);
+		add(weekDaysLabel);
 
 		int x = 0;
 		int y = 35;
 		int col = 0;
 		for (int i = 0; i < 42; i++) {
-			lblDias[i] = new BorderLabel("", BorderFactory.createEtchedBorder());
-			lblDias[i].setBounds(x, y, 20, 15);
-			lblDias[i].setHorizontalAlignment(SwingConstants.CENTER);
-			lblDias[i].setFont(fontCells);
-			lblDias[i].setOpaque(false);
-			lblDias[i].addMouseListener(listener);
-			add(lblDias[i]);
+			dayLabels[i] = createLabelWithBorder("");
+			dayLabels[i].setBounds(x, y, 20, 15);
+			dayLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+			dayLabels[i].setFont(fontCells);
+			dayLabels[i].setOpaque(false);
+			dayLabels[i].addMouseListener(listener);
+			add(dayLabels[i]);
 			col++;
 			if (col == 7) {
 				col = 0;
@@ -154,11 +157,11 @@ public class DatePicker extends JPanel {
 				x += 20;
 			}
 		}
-		btoHoje.setBounds(0, 125, 140, 20);
-		btoHoje.setMnemonic('H');
-		btoHoje.setOpaque(true);
-		btoHoje.addMouseListener(listener);
-		add(btoHoje);
+		today.setBounds(0, 125, 140, 20);
+		today.setMnemonic('H');
+		today.setOpaque(true);
+		today.addMouseListener(listener);
+		add(today);
 	}
 
 	private int getToday() {
@@ -186,9 +189,9 @@ public class DatePicker extends JPanel {
 
 		for (int j = 0; j < 42; j++) {
 			if ((j < weekDay - 1) || (j > (monthDay + weekDay - 2)))
-				lblDias[j].setText("");
+				dayLabels[j].setText("");
 			else {
-				lblDias[j].setText(String.valueOf(actualMonth));
+				dayLabels[j].setText(String.valueOf(actualMonth));
 				if (diaHoje == actualMonth)
 					i = j;
 
@@ -200,7 +203,7 @@ public class DatePicker extends JPanel {
 
 	private void getMonthName(int month) {
 		nomeMesHoje = monthNames[month - 1] + anoHoje;
-		lblMesAno.setText(nomeMesHoje);
+		yearLabel.setText(nomeMesHoje);
 	}
 
 	/**
@@ -217,27 +220,27 @@ public class DatePicker extends JPanel {
 			diaSele = Integer.parseInt(diaSelecionado);
 		}
 
-		data = "";
+		dateString = "";
 		if (diaSele < 10) {
-			data += "0" + diaSelecionado + "/";
+			dateString += "0" + diaSelecionado + "/";
 		} else {
-			data += diaSelecionado + "/";
+			dateString += diaSelecionado + "/";
 		}
 		if (mesHoje < 10) {
-			data += "0" + mesHoje + "/";
+			dateString += "0" + mesHoje + "/";
 		} else {
-			data += mesHoje + "/";
+			dateString += mesHoje + "/";
 		}
-		data += anoHoje;
-		return data;
+		dateString += anoHoje;
+		return dateString;
 	}
 
 	/**
 	 * Method wich select the day (Highlight it)
 	 */
 	public void setSelectedDay(int x) {
-		lblDias[x].setBackground(new Color(72, 164, 255));
-		lblDias[x].setForeground(Color.white);
+		dayLabels[x].setBackground(new Color(72, 164, 255));
+		dayLabels[x].setForeground(Color.white);
 		corDiaSelecionado = x;
 	}
 
@@ -248,20 +251,20 @@ public class DatePicker extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			// Pressionou um dia
 			for (int i = 1; i < 42; i++) {
-				if (e.getSource() == lblDias[i]) {
-					if (lblDias[i].getText() != "") {
+				if (e.getSource() == dayLabels[i]) {
+					if (dayLabels[i].getText() != "") {
 						setSelectedDay(i);
-						data = "";
-						data += lblDias[i].getText() + "/" + mesHoje + "/"
+						dateString = "";
+						dateString += dayLabels[i].getText() + "/" + mesHoje + "/"
 								+ anoHoje;
-						diaSelecionado = String.valueOf(lblDias[i].getText());
+						diaSelecionado = String.valueOf(dayLabels[i].getText());
 						calendar.removeCalendario(getData());
 					}
 				}
 			}
 
 			// Pressionou bot�o Hoje
-			if (e.getSource() == btoHoje) {
+			if (e.getSource() == today) {
 				diaSelecionado = String.valueOf(getToday());
 				mesHoje = getCurrentMonth();
 				anoHoje = getCurrentYear();
@@ -271,9 +274,9 @@ public class DatePicker extends JPanel {
 			}
 
 			// Pressionou bot�o Pr�ximo Mes
-			if (e.getSource() == lblMesProx) {
-				lblDias[corDiaSelecionado].setBackground(Color.lightGray);
-				lblDias[corDiaSelecionado].setForeground(Color.black);
+			if (e.getSource() == nextMonth) {
+				dayLabels[corDiaSelecionado].setBackground(Color.lightGray);
+				dayLabels[corDiaSelecionado].setForeground(Color.black);
 
 				mesHoje++;
 
@@ -287,9 +290,9 @@ public class DatePicker extends JPanel {
 			}
 
 			// Pressionou bot�o Mes Anterior
-			if (e.getSource() == lblMesAnte) {
-				lblDias[corDiaSelecionado].setBackground(Color.lightGray);
-				lblDias[corDiaSelecionado].setForeground(Color.black);
+			if (e.getSource() == beforeMonth) {
+				dayLabels[corDiaSelecionado].setBackground(Color.lightGray);
+				dayLabels[corDiaSelecionado].setForeground(Color.black);
 
 				mesHoje--;
 				if (mesHoje < 1) {
@@ -304,11 +307,10 @@ public class DatePicker extends JPanel {
 		}
 	}
 
-	class BorderLabel extends JLabel {
-		public BorderLabel(String text, Border b) {
-			super(text);
-			setBorder(b);
-			setHorizontalAlignment(SwingConstants.CENTER);
-		}
+	private JLabel createLabelWithBorder(String text) {
+		JLabel label = new JLabel(text);
+		label.setBorder(BorderFactory.createEtchedBorder());
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		return label;
 	}
 }
