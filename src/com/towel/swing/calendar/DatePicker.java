@@ -7,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import javax.swing.border.Border;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,24 +20,22 @@ import java.util.Date;
 public class DatePicker extends JPanel {
 	private CalendarView calendar;
 
-	private JLabel beforeMonth;
+	private JLabel previousMonth;
 	private JLabel nextMonth;
-	private JLabel yearLabel;
+	private JLabel monthLabel;
 
-	private JLabel weekDaysLabel = new JLabel(
-			"  D    S    T    Q    Q     S    S ");
+	private JLabel weekDaysLabel;
 	private JLabel dayLabels[] = new JLabel[42];
 	private JButton today = new JButton("Today");
-	private String dateString = "__/__/____";
-	private int diaHoje;
-	private int mesHoje;
-	private int anoHoje;
-	private String nomeMesHoje;
-	private String diaSelecionado;
-	private int corDiaSelecionado;
+	private int actualDay;
+	private int actualMonth;
+	private int actualYear;
+	private String selectedDay;
+	private int selectedDayIndex;
 	private MouseListener listener;
 
 	public static String[] monthNames;
+	public static String[] weekDays;
 
 	static {
 		monthNames = new String[12];
@@ -55,62 +52,71 @@ public class DatePicker extends JPanel {
 		monthNames[9] = "Outubro/";
 		monthNames[10] = "Novembro/";
 		monthNames[11] = "Dezembro/";
+
+		weekDays = new String[7];
+		weekDays[0] = "D";
+		weekDays[1] = "S";
+		weekDays[2] = "T";
+		weekDays[3] = "Q";
+		weekDays[4] = "Q";
+		weekDays[5] = "S";
+		weekDays[6] = "S";
 	}
 
 	/**
 	 * Construtor
 	 * 
-	 * @param Calendario
-	 *            - referencia da classe Calendario
-	 * @param x
-	 *            - largura do Frame
-	 * @param y
-	 *            - altura do Frame
-	 * @param int - dia se o dia for = 0 (zero) � mostrado a data de hoje
-	 * @param int - mes
-	 * @param int - ano
+	 * @param cal
+	 *            - CalendarView from where this is opening from
+	 * @param day
+	 *            Current day, use zero to show current day
+	 * @param month
+	 *            Current month (Can be zero if day is zero two)
+	 * @param year
+	 *            Current year (Can be zero if day is zero two)
 	 */
 	public DatePicker(CalendarView cal, int dia, int mes, int ano) {
 		calendar = cal;
 		listener = new MouseListener();
 
-		beforeMonth = createLabelWithBorder("<");
+		previousMonth = createLabelWithBorder("<");
 		nextMonth = createLabelWithBorder(">");
-		yearLabel = createLabelWithBorder("");
+		monthLabel = createLabelWithBorder("");
 
-		diaSelecionado = "0";
+		selectedDay = "0";
 
 		if (dia == 0) {
-			diaHoje = getToday();
-			mesHoje = getCurrentMonth();
-			anoHoje = getCurrentYear();
+			actualDay = getToday();
+			actualMonth = getCurrentMonth();
+			actualYear = getCurrentYear();
 		} else {
-			diaHoje = dia;
-			mesHoje = mes;
-			anoHoje = ano;
+			actualDay = dia;
+			actualMonth = mes;
+			actualYear = ano;
 		}
-		// Verifica o mes para pegar o nome do mes.
-		getMonthName(mesHoje);
 
-		jbInit();
+		init();
 
-		setSelectedDay(montaMes(anoHoje, mesHoje));
+		String monthName = getMonthName(actualMonth);
+		monthLabel.setText(monthName);
+
+		setSelectedDay(populateCells());
 		this.setBounds(0, 0, 140, 145);
 	}
 
-	void jbInit() {
+	private void init() {
 		setLayout(null);
 
 		Font fontHeader = new Font("SansSerif", Font.BOLD, 11);
 		Font fontCells = new Font("SansSerif", Font.PLAIN, 11);
 
-		beforeMonth.setFont(fontHeader);
-		beforeMonth.setBounds(0, 0, 15, 20);
-		beforeMonth.setHorizontalAlignment(SwingConstants.CENTER);
-		beforeMonth.setBackground(Color.lightGray);
-		beforeMonth.setOpaque(true);
-		beforeMonth.addMouseListener(listener);
-		add(beforeMonth);
+		previousMonth.setFont(fontHeader);
+		previousMonth.setBounds(0, 0, 15, 20);
+		previousMonth.setHorizontalAlignment(SwingConstants.CENTER);
+		previousMonth.setBackground(Color.lightGray);
+		previousMonth.setOpaque(true);
+		previousMonth.addMouseListener(listener);
+		add(previousMonth);
 
 		nextMonth.setFont(fontHeader);
 		nextMonth.setBounds(125, 0, 15, 20);
@@ -120,15 +126,20 @@ public class DatePicker extends JPanel {
 		nextMonth.addMouseListener(listener);
 		add(nextMonth);
 
-		yearLabel.setFont(fontHeader);
-		yearLabel.setBounds(15, 0, 110, 20);
-		yearLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		yearLabel.setBackground(Color.lightGray);
-		yearLabel.setOpaque(true);
-		yearLabel.addMouseListener(listener);
-		yearLabel.setText(nomeMesHoje);
-		add(yearLabel);
+		monthLabel.setFont(fontHeader);
+		monthLabel.setBounds(15, 0, 110, 20);
+		monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		monthLabel.setBackground(Color.lightGray);
+		monthLabel.setOpaque(true);
+		monthLabel.addMouseListener(listener);
+		add(monthLabel);
 
+		StringBuilder weekDays = new StringBuilder();
+		for (String s : DatePicker.weekDays)
+			weekDays.append(s).append("   ");
+		weekDays.delete(weekDays.length() - 3, weekDays.length());
+
+		weekDaysLabel = new JLabel(weekDays.toString());
 		weekDaysLabel.setFont(fontHeader);
 		weekDaysLabel.setBounds(0, 20, 139, 15);
 		weekDaysLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -177,33 +188,32 @@ public class DatePicker extends JPanel {
 				.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
 	}
 
-	private int montaMes(int ano, int mes) {
+	private int populateCells() {
 		Calendar now = Calendar.getInstance();
 		now.clear(Calendar.DATE);
-		now.set(ano, --mes, 1);
+		now.set(actualYear, actualMonth - 1, 1);
 		int weekDay = now.get(Calendar.DAY_OF_WEEK);
 		int monthDay = now.getActualMaximum(Calendar.DAY_OF_MONTH);
 		int i = 0;
 
-		int actualMonth = 1;
+		int day = 1;
 
 		for (int j = 0; j < 42; j++) {
 			if ((j < weekDay - 1) || (j > (monthDay + weekDay - 2)))
 				dayLabels[j].setText("");
 			else {
-				dayLabels[j].setText(String.valueOf(actualMonth));
-				if (diaHoje == actualMonth)
+				dayLabels[j].setText(String.valueOf(day));
+				if (actualDay == day)
 					i = j;
 
-				actualMonth++;
+				day++;
 			}
 		}
 		return i;
 	}
 
-	private void getMonthName(int month) {
-		nomeMesHoje = monthNames[month - 1] + anoHoje;
-		yearLabel.setText(nomeMesHoje);
+	private String getMonthName(int month) {
+		return monthNames[month - 1] + actualYear;
 	}
 
 	/**
@@ -211,28 +221,26 @@ public class DatePicker extends JPanel {
 	 * 
 	 * @return String - Data
 	 */
-	public String getData() {
+	public String getDate() {
 
-		int diaSele = Integer.parseInt(diaSelecionado);
+		StringBuilder result = new StringBuilder();
 
-		if (diaSele == 0) {
-			diaSelecionado = String.valueOf(diaHoje);
-			diaSele = Integer.parseInt(diaSelecionado);
+		int day = Integer.parseInt(selectedDay);
+
+		if (day == 0) {
+			selectedDay = String.valueOf(actualDay);
+			day = Integer.parseInt(selectedDay);
 		}
 
-		dateString = "";
-		if (diaSele < 10) {
-			dateString += "0" + diaSelecionado + "/";
-		} else {
-			dateString += diaSelecionado + "/";
-		}
-		if (mesHoje < 10) {
-			dateString += "0" + mesHoje + "/";
-		} else {
-			dateString += mesHoje + "/";
-		}
-		dateString += anoHoje;
-		return dateString;
+		if (day < 10)
+			result.append("0");
+		result.append(selectedDay).append("/");
+
+		if (actualMonth < 10)
+			result.append("0");
+
+		result.append(actualMonth).append("/").append(actualYear);
+		return result.toString();
 	}
 
 	/**
@@ -241,69 +249,59 @@ public class DatePicker extends JPanel {
 	public void setSelectedDay(int x) {
 		dayLabels[x].setBackground(new Color(72, 164, 255));
 		dayLabels[x].setForeground(Color.white);
-		corDiaSelecionado = x;
+		selectedDayIndex = x;
 	}
 
 	private class MouseListener extends MouseAdapter {
-		/**
-		 * Tratamento do click do mouse
-		 */
 		public void mouseClicked(MouseEvent e) {
-			// Pressionou um dia
 			for (int i = 1; i < 42; i++) {
 				if (e.getSource() == dayLabels[i]) {
 					if (dayLabels[i].getText() != "") {
 						setSelectedDay(i);
-						dateString = "";
-						dateString += dayLabels[i].getText() + "/" + mesHoje + "/"
-								+ anoHoje;
-						diaSelecionado = String.valueOf(dayLabels[i].getText());
-						calendar.removeCalendario(getData());
+						// dateString = "";
+						// dateString += dayLabels[i].getText() + "/"
+						// + actualMonth + "/" + actualYear;
+						selectedDay = String.valueOf(dayLabels[i].getText());
+						calendar.dateSelected(getDate());
 					}
 				}
 			}
 
-			// Pressionou bot�o Hoje
 			if (e.getSource() == today) {
-				diaSelecionado = String.valueOf(getToday());
-				mesHoje = getCurrentMonth();
-				anoHoje = getCurrentYear();
+				selectedDay = String.valueOf(getToday());
+				actualMonth = getCurrentMonth();
+				actualYear = getCurrentYear();
 
-				setSelectedDay(diaHoje + 1);
-				calendar.removeCalendario(getData());
+				setSelectedDay(actualDay + 1);
+				calendar.dateSelected(getDate());
+				return;
 			}
 
-			// Pressionou bot�o Pr�ximo Mes
+			// If it's not 'today' pressed, then it is month 'next' or
+			// 'previous'
+
+			dayLabels[selectedDayIndex].setBackground(Color.lightGray);
+			dayLabels[selectedDayIndex].setForeground(Color.black);
+
 			if (e.getSource() == nextMonth) {
-				dayLabels[corDiaSelecionado].setBackground(Color.lightGray);
-				dayLabels[corDiaSelecionado].setForeground(Color.black);
+				actualMonth++;
 
-				mesHoje++;
-
-				if (mesHoje > 12) {
-					mesHoje = 1;
-					anoHoje++;
+				if (actualMonth > 12) {
+					actualMonth = 1;
+					actualYear++;
 				}
-				getMonthName(mesHoje);
-				montaMes(anoHoje, mesHoje);
-				setVisible(true);
 			}
 
-			// Pressionou bot�o Mes Anterior
-			if (e.getSource() == beforeMonth) {
-				dayLabels[corDiaSelecionado].setBackground(Color.lightGray);
-				dayLabels[corDiaSelecionado].setForeground(Color.black);
-
-				mesHoje--;
-				if (mesHoje < 1) {
-					mesHoje = 12;
-					anoHoje--;
+			if (e.getSource() == previousMonth) {
+				actualMonth--;
+				if (actualMonth < 1) {
+					actualMonth = 12;
+					actualYear--;
 				}
-
-				getMonthName(mesHoje);
-				montaMes(anoHoje, mesHoje);
-				setVisible(true);
 			}
+			String monthName = getMonthName(actualMonth);
+			monthLabel.setText(monthName);
+			populateCells();
 		}
 	}
 

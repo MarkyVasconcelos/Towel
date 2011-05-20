@@ -179,7 +179,6 @@ public class CalendarView extends JPanel implements KeyListener,
 		
 		glassPane.setContentPane(content);
 		glassPane.setSize(140,150);
-		glassPane.setAlwaysOnTop(true);
 		glassPane.setLocation(button.getLocationOnScreen());
 		glassPane.setVisible(true);
 	} // ActionPerformed
@@ -190,7 +189,7 @@ public class CalendarView extends JPanel implements KeyListener,
 	 * @param String
 	 *            - data
 	 */
-	public void removeCalendario(String s) {
+	public void dateSelected(String s) {
 		txt.setText(s);
 		modified = true;
 		glassPane.remove(cal);
