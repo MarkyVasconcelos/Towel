@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
 
-import com.towel.time.Data;
+import com.towel.time.DateUtils;
 
 /**
  * A JComponent with a JTextField for dates and also has a DatePicker popup.
@@ -29,38 +29,12 @@ import com.towel.time.Data;
  */
 public class CalendarView extends JPanel implements KeyListener,
 		ActionListener, FocusListener {
-	private boolean validDate = true;
-	private boolean modified = false;
 	private DatePicker cal;
 	private JButton button;
 	private JTextField txt;
 	private int cont = 0;
-	
+
 	private JWindow glassPane;
-
-	/*
-	 * variaveis usadas pelas tela que existem data da validade do cartão
-	 * 
-	 * @Param boolean cadmesano e o paramentro para chamar o construtor do
-	 * metodo para a data da validade do cartao String dtmesano varivel que e
-	 * atribuida a data String variavel mes atribuido o mes int m varival para
-	 * fazer a validação do mes se for > 13 não aceita String ano variavel que é
-	 * atribuido o ano da data do cartão
-	 */
-	private boolean cadmesano = false;
-	private boolean caddiames = false;
-	private String dtmesano = "";
-	private String dtdiames = "";
-	private String mes = "";
-	private int m = 0;
-	private int a = 0;
-	private int as = 0;
-	private int d = 0;
-	private String ano = "";
-	private String dia = "";
-	private String data;
-
-	// ////////////////////////////////////////////
 
 	/**
 	 * 
@@ -73,11 +47,11 @@ public class CalendarView extends JPanel implements KeyListener,
 	public CalendarView() {
 		txt = new JTextField();
 		button = new JButton();
-		
+
 		glassPane = new JWindow();
 
 		add(txt);
-		
+
 		init();
 
 		button.addActionListener(this);
@@ -86,59 +60,17 @@ public class CalendarView extends JPanel implements KeyListener,
 
 	}
 
-	public CalendarView(int xCal, int yCal, JPanel glass, boolean mesano,
-			String d) {
-		cadmesano = mesano;
-		data = d;
-
-		init();
-		txt.addKeyListener(this);
-		txt.addFocusListener(this);
-	}
-
-	public CalendarView(int xCal, int yCal, JPanel glass, boolean diames) {
-		caddiames = diames;
-
-		init();
-		txt.addKeyListener(this);
-		txt.addFocusListener(this);
-	}
-
 	private void init() {
-		if (cadmesano && !caddiames) {
-			txt.setPreferredSize(new Dimension(53, 21));
-			txt.setSelectionEnd(7);
-			txt.setMinimumSize(new Dimension(53, 21));
-			txt.setMaximumSize(new Dimension(53, 21));
-			txt.setText("__/____");
-			txt.setColumns(7);
-			button.setFont(new Font("SansSerif", 0, 12));
-			button.setText("..");
-			button.setFont(new Font("SansSerif", Font.BOLD, 12));
-			add(button);
-		} else if (caddiames && !cadmesano) {
-			txt.setPreferredSize(new Dimension(53, 21));
-			txt.setSelectionEnd(5);
-			txt.setMinimumSize(new Dimension(53, 21));
-			txt.setMaximumSize(new Dimension(53, 21));
-			txt.setText("__/__");
-			txt.setColumns(5);
-			button.setFont(new Font("SansSerif", 0, 12));
-			button.setText("..");
-			button.setFont(new Font("SansSerif", Font.BOLD, 12));
-			add(button);
-		} else if (!cadmesano && !caddiames) {
-			txt.setPreferredSize(new Dimension(73, 21));
-			txt.setSelectionEnd(10);
-			txt.setMinimumSize(new Dimension(73, 21));
-			txt.setMaximumSize(new Dimension(73, 21));
-			txt.setText("__/__/____");
-			txt.setColumns(10);
-			button.setFont(new Font("SansSerif", 0, 12));
-			button.setText("..");
-			button.setFont(new Font("SansSerif", Font.BOLD, 12));
-			add(button);
-		}
+		txt.setPreferredSize(new Dimension(73, 21));
+		txt.setSelectionEnd(10);
+		txt.setMinimumSize(new Dimension(73, 21));
+		txt.setMaximumSize(new Dimension(73, 21));
+		txt.setText("__/__/____");
+		txt.setColumns(10);
+		button.setFont(new Font("SansSerif", 0, 12));
+		button.setText("..");
+		button.setFont(new Font("SansSerif", Font.BOLD, 12));
+		add(button);
 	}
 
 	/**
@@ -162,23 +94,22 @@ public class CalendarView extends JPanel implements KeyListener,
 
 	public void actionPerformed(ActionEvent e) {
 		String strDia = txt.getText();
-		validDate = Data.isDate(strDia);
-		if (validDate) {
+		if (DateUtils.isValidDate(strDia)) {
 			int dia = Integer.parseInt(strDia.substring(0, 2));
 			int mes = Integer.parseInt(strDia.substring(3, 5));
 			int ano = Integer.parseInt(strDia.substring(6, 10));
 
-			cal = new DatePicker(this,dia, mes, ano);
+			cal = new DatePicker(this, dia, mes - 1, ano);
 		} else {
-			cal = new DatePicker(this,0, 0, 0);
+			cal = new DatePicker(this, 0, 0, 0);
 		}
-		
+
 		JPanel content = new JPanel();
 		content.setLayout(null);
 		content.add(cal);
-		
+
 		glassPane.setContentPane(content);
-		glassPane.setSize(140,150);
+		glassPane.setSize(140, 150);
 		glassPane.setLocation(button.getLocationOnScreen());
 		glassPane.setVisible(true);
 	} // ActionPerformed
@@ -191,27 +122,9 @@ public class CalendarView extends JPanel implements KeyListener,
 	 */
 	public void dateSelected(String s) {
 		txt.setText(s);
-		modified = true;
 		glassPane.remove(cal);
 		cal = null;
-		glassPane.repaint();
 		glassPane.setVisible(false);
-	}
-
-	/*
-	 * Informa se o campo sofreu alguma alteracao
-	 * 
-	 * @return boolean
-	 */
-	public boolean getAlterado() {
-		return modified;
-	}
-
-	/*
-	 * Informa que os dados foram salvos
-	 */
-	public void setATualizado() {
-		modified = false;
 	}
 
 	// ==================KEYLISTENER=================================================
@@ -219,71 +132,30 @@ public class CalendarView extends JPanel implements KeyListener,
 	 * Metodo que informa que o campo foi alterado
 	 */
 	public void keyPressed(KeyEvent k) {
-		modified = true;
 	}
 
 	/**
 	 * Metodo que valida o que é digitado permitindo somente numeros
 	 */
 	public void keyTyped(KeyEvent k) {
-		if (cadmesano && !caddiames) {
-			char c = k.getKeyChar();
-			if ((getText().length() > 6) & (!getText().equals("__/____")))
+		char c = k.getKeyChar();
+		if ((getText().length() > 9) & (!getText().equals("__/__/____")))
+			k.consume();
+		else {
+			if ((c < '0') | (c > '9'))// & (c != '/'))
 				k.consume();
 			else {
-				if ((c < '0') | (c > '9'))// & (c != '/'))
-					k.consume();
-				else {
-					if (cont == 0) {
-						setText("");
-						cont = 1;
-					}
-					switch (getText().length()) {
-					case 2:
-						setText(getText() + "/");
-						break;
-					}
+				if (cont == 0) {
+					setText("");
+					cont = 1;
 				}
-			}
-		} else if (caddiames && !cadmesano) {
-			char c = k.getKeyChar();
-			if ((getText().length() > 4) & (!getText().equals("__/__")))
-				k.consume();
-			else {
-				if ((c < '0') | (c > '9'))// & (c != '/'))
-					k.consume();
-				else {
-					if (cont == 0) {
-						setText("");
-						cont = 1;
-					}
-					switch (getText().length()) {
-					case 2:
-						setText(getText() + "/");
-						break;
-					}
-				}
-			}
-		} else if (!cadmesano && !caddiames) {
-			char c = k.getKeyChar();
-			if ((getText().length() > 9) & (!getText().equals("__/__/____")))
-				k.consume();
-			else {
-				if ((c < '0') | (c > '9'))// & (c != '/'))
-					k.consume();
-				else {
-					if (cont == 0) {
-						setText("");
-						cont = 1;
-					}
-					switch (getText().length()) {
-					case 2:
-						setText(getText() + "/");
-						break;
-					case 5:
-						setText(getText() + "/");
-						break;
-					}
+				switch (getText().length()) {
+				case 2:
+					setText(getText() + "/");
+					break;
+				case 5:
+					setText(getText() + "/");
+					break;
 				}
 			}
 		}
@@ -300,53 +172,9 @@ public class CalendarView extends JPanel implements KeyListener,
 	 * Quando o componente perde o foco é validado a data
 	 */
 	public void focusLost(FocusEvent fe) {
-		if (cadmesano && !caddiames) {
-			if (txt.getText().length() < 7 || txt.getText().length() > 7) {
-				JOptionPane.showMessageDialog(null,
-						"Digite o mês e ano da data de validade");
-			} else {
-
-				dtmesano = txt.getText();
-				mes = dtmesano.substring(0, 2);
-				ano = dtmesano.substring(3, 7);
-				m = Integer.parseInt(mes);
-				if (m > 12)
-					JOptionPane.showMessageDialog(null, "Mes Inválido");
-				if (!ano.equals("") && m <= 12) {
-					String anoservidor = data.substring(6, 10);
-					a = Integer.parseInt(ano);
-					as = Integer.parseInt(anoservidor);
-					if (a < as)
-						JOptionPane.showMessageDialog(null, "Ano Inválido");
-					else {
-						ano = dtmesano.substring(5, 7);
-						mes = dtmesano.substring(0, 3);
-						txt.setText(mes + ano);
-					}
-
-				}
-			}
-		}
-		if (caddiames && !cadmesano) {
-			if (txt.getText().length() < 5 || txt.getText().length() > 5) {
-				JOptionPane.showMessageDialog(null,
-						" Digite o dia e mês da data de aniversario");
-			} else {
-				dtdiames = txt.getText();
-				dia = dtdiames.substring(0, 2);
-				mes = dtdiames.substring(3, 5);
-				m = Integer.parseInt(mes);
-				d = Integer.parseInt(dia);
-				if (mes.equals("") || m > 12)
-					JOptionPane.showMessageDialog(null, "Mes Inválido");
-				if (dia.equals("") || d > 31)
-					JOptionPane.showMessageDialog(null, "Dia Inválido");
-			}
-		} else if (!cadmesano && !caddiames) {
-			if (!getText().equals("__/__/____") & !getText().equals("")) {
-				if (!Data.isDate(getText())) {
-					JOptionPane.showMessageDialog(null, "Data Inválida");
-				}
+		if (!getText().equals("__/__/____") & !getText().equals("")) {
+			if (!DateUtils.isValidDate(getText())) {
+				JOptionPane.showMessageDialog(null, "Data Inválida");
 			}
 		}
 	}

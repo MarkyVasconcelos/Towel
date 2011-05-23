@@ -27,9 +27,8 @@ public class DatePicker extends JPanel {
 	private JLabel weekDaysLabel;
 	private JLabel dayLabels[] = new JLabel[42];
 	private JButton today = new JButton("Today");
-	private int actualDay;
-	private int actualMonth;
-	private int actualYear;
+
+	private Calendar actualSelection;
 	private String selectedDay;
 	private int selectedDayIndex;
 	private MouseListener listener;
@@ -75,7 +74,7 @@ public class DatePicker extends JPanel {
 	 * @param year
 	 *            Current year (Can be zero if day is zero two)
 	 */
-	public DatePicker(CalendarView cal, int dia, int mes, int ano) {
+	public DatePicker(CalendarView cal, int day, int month, int year) {
 		calendar = cal;
 		listener = new MouseListener();
 
@@ -85,19 +84,20 @@ public class DatePicker extends JPanel {
 
 		selectedDay = "0";
 
-		if (dia == 0) {
-			actualDay = getToday();
-			actualMonth = getCurrentMonth();
-			actualYear = getCurrentYear();
+		actualSelection = Calendar.getInstance();
+		if (day == 0) {
+			actualSelection.set(Calendar.DAY_OF_MONTH, getToday());
+			actualSelection.set(Calendar.MONTH, getCurrentMonth());
+			actualSelection.set(Calendar.YEAR, getCurrentYear());
 		} else {
-			actualDay = dia;
-			actualMonth = mes;
-			actualYear = ano;
+			actualSelection.set(Calendar.DAY_OF_MONTH, day);
+			actualSelection.set(Calendar.MONTH, month);
+			actualSelection.set(Calendar.YEAR, year);
 		}
 
 		init();
 
-		String monthName = getMonthName(actualMonth);
+		String monthName = getMonthName(actualSelection.get(Calendar.MONTH));
 		monthLabel.setText(monthName);
 
 		setSelectedDay(populateCells());
@@ -180,7 +180,7 @@ public class DatePicker extends JPanel {
 	}
 
 	private int getCurrentMonth() {
-		return Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
+		return Integer.parseInt(new SimpleDateFormat("MM").format(new Date())) - 1;
 	}
 
 	private int getCurrentYear() {
@@ -191,7 +191,8 @@ public class DatePicker extends JPanel {
 	private int populateCells() {
 		Calendar now = Calendar.getInstance();
 		now.clear(Calendar.DATE);
-		now.set(actualYear, actualMonth - 1, 1);
+		now.set(actualSelection.get(Calendar.YEAR),
+				actualSelection.get(Calendar.MONTH), 1);
 		int weekDay = now.get(Calendar.DAY_OF_WEEK);
 		int monthDay = now.getActualMaximum(Calendar.DAY_OF_MONTH);
 		int i = 0;
@@ -203,7 +204,7 @@ public class DatePicker extends JPanel {
 				dayLabels[j].setText("");
 			else {
 				dayLabels[j].setText(String.valueOf(day));
-				if (actualDay == day)
+				if (actualSelection.get(Calendar.DAY_OF_MONTH) == day)
 					i = j;
 
 				day++;
@@ -213,7 +214,7 @@ public class DatePicker extends JPanel {
 	}
 
 	private String getMonthName(int month) {
-		return monthNames[month - 1] + actualYear;
+		return monthNames[month] + actualSelection.get(Calendar.YEAR);
 	}
 
 	/**
@@ -228,7 +229,8 @@ public class DatePicker extends JPanel {
 		int day = Integer.parseInt(selectedDay);
 
 		if (day == 0) {
-			selectedDay = String.valueOf(actualDay);
+			selectedDay = String.valueOf(actualSelection
+					.get(Calendar.DAY_OF_MONTH));
 			day = Integer.parseInt(selectedDay);
 		}
 
@@ -236,10 +238,11 @@ public class DatePicker extends JPanel {
 			result.append("0");
 		result.append(selectedDay).append("/");
 
-		if (actualMonth < 10)
+		if (actualSelection.get(Calendar.MONTH) < 11)
 			result.append("0");
 
-		result.append(actualMonth).append("/").append(actualYear);
+		result.append(actualSelection.get(Calendar.MONTH) + 1).append("/")
+				.append(actualSelection.get(Calendar.YEAR));
 		return result.toString();
 	}
 
@@ -258,9 +261,6 @@ public class DatePicker extends JPanel {
 				if (e.getSource() == dayLabels[i]) {
 					if (dayLabels[i].getText() != "") {
 						setSelectedDay(i);
-						// dateString = "";
-						// dateString += dayLabels[i].getText() + "/"
-						// + actualMonth + "/" + actualYear;
 						selectedDay = String.valueOf(dayLabels[i].getText());
 						calendar.dateSelected(getDate());
 					}
@@ -269,10 +269,10 @@ public class DatePicker extends JPanel {
 
 			if (e.getSource() == today) {
 				selectedDay = String.valueOf(getToday());
-				actualMonth = getCurrentMonth();
-				actualYear = getCurrentYear();
+				actualSelection.set(Calendar.MONTH, getCurrentMonth());
+				actualSelection.set(Calendar.YEAR, getCurrentYear());
 
-				setSelectedDay(actualDay + 1);
+				setSelectedDay(actualSelection.get(Calendar.DAY_OF_MONTH) + 1);
 				calendar.dateSelected(getDate());
 				return;
 			}
@@ -283,23 +283,13 @@ public class DatePicker extends JPanel {
 			dayLabels[selectedDayIndex].setBackground(Color.lightGray);
 			dayLabels[selectedDayIndex].setForeground(Color.black);
 
-			if (e.getSource() == nextMonth) {
-				actualMonth++;
+			if (e.getSource() == nextMonth)
+				actualSelection.add(Calendar.MONTH, 1);
 
-				if (actualMonth > 12) {
-					actualMonth = 1;
-					actualYear++;
-				}
-			}
+			if (e.getSource() == previousMonth)
+				actualSelection.add(Calendar.MONTH, -1);
 
-			if (e.getSource() == previousMonth) {
-				actualMonth--;
-				if (actualMonth < 1) {
-					actualMonth = 12;
-					actualYear--;
-				}
-			}
-			String monthName = getMonthName(actualMonth);
+			String monthName = getMonthName(actualSelection.get(Calendar.MONTH));
 			monthLabel.setText(monthName);
 			populateCells();
 		}

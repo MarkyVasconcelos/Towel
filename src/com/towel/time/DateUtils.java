@@ -6,8 +6,8 @@ import java.util.Date;
 /**
  * Componente para validacao de datas
  */
-public class Data {
-	private static SimpleDateFormat DataFormatador = new SimpleDateFormat(
+public class DateUtils {
+	private static SimpleDateFormat formatter = new SimpleDateFormat(
 			"dd/MM/yyyy");
 
 	/**
@@ -17,107 +17,99 @@ public class Data {
 	 *            - data
 	 * @return boolean
 	 */
-	public final static boolean isDate(String psDt) {
-		Integer Dia;
-		Integer Mes;
-		Integer Ano;
-		Date DataConv;
-		Date DataLimiteInf;
-		Date DataLimiteSup;
+	public final static boolean isValidDate(String psDt) {
+		Integer dia;
+		Integer mes;
+		Integer ano;
+		Date dataConv;
+		Date dataLimiteInf;
+		Date dataLimiteSup;
 		String a = psDt.trim();
 		if (a.length() != 10)
 			return false;
 
 		try {
-			Dia = new Integer(a.substring(0, 2));
-			Mes = new Integer(a.substring(3, 5));
-			Ano = new Integer(a.substring(6));
+			dia = new Integer(a.substring(0, 2));
+			mes = new Integer(a.substring(3, 5));
+			ano = new Integer(a.substring(6));
 		} catch (Exception ex) {
 			return false;
 		}
 
-		if (Mes.intValue() > 12)
+		if (mes.intValue() > 12)
 			return false;
 
-		if (Mes.intValue() == 2) {
-			if (Ano.intValue() % 4 == 0) // Bisexto
-			{
-				if (Dia.intValue() > 29)
+		if (mes.intValue() == 2) {
+			if (ano.intValue() % 4 == 0) {
+				if (dia.intValue() > 29)
 					return false;
-			} else if (Dia.intValue() > 28)
+			} else if (dia.intValue() > 28)
 				return false;
-		} else if (Dia.intValue() > 31)
+		} else if (dia.intValue() > 31)
 			return false;
-		else if (Dia.intValue() > 30
-				&& (Mes.intValue() == 4 || Mes.intValue() == 6
-						|| Mes.intValue() == 9 || Mes.intValue() == 11))
+		else if (dia.intValue() > 30
+				&& (mes.intValue() == 4 || mes.intValue() == 6
+						|| mes.intValue() == 9 || mes.intValue() == 11))
 			return false;
 
-		if (Dia.intValue() > 31)
+		if (dia.intValue() > 31)
 			return false;
 
 		try {
-			DataConv = DataFormatador.parse(a);
-			DataLimiteInf = DataFormatador.parse("01/01/1900");
-			DataLimiteSup = DataFormatador.parse("06/06/2079");
+			dataConv = formatter.parse(a);
+			dataLimiteInf = formatter.parse("01/01/1900");
+			dataLimiteSup = formatter.parse("06/06/2079");
 		} catch (Exception e) {
 			return false;
 		}
 
-		if (DataConv.after(DataLimiteSup))
+		if (dataConv.after(dataLimiteSup))
 			return false;
 
-		if (DataConv.before(DataLimiteInf))
+		if (dataConv.before(dataLimiteInf))
 			return false;
 
 		return true;
 	}
 
 	/**
-	 * Converte string para data.
+	 * Formate a String and return a Date.
 	 * 
 	 * @param String
-	 *            - data
+	 *            - date
 	 * @param String
-	 *            - formato
+	 *            - format
 	 * @return Date
 	 */
-	public final static Date cvDate(String psDt, String psFormato) {
-		SimpleDateFormat DtFormatador = new SimpleDateFormat(psFormato);
-		try {
-			Date DataConv = DtFormatador.parse(psDt);
-			return DataConv;
-		} catch (Exception e)// ParseException
-		{
-			return new Date(0);
-		}
+	public final static Date parseDate(String dateString, String psFormato) {
+		return parseDate(dateString, new SimpleDateFormat(psFormato));
 	}
 
-	public final static Date cvDate(String psDt, SimpleDateFormat DtFormatador) {
+	public final static Date parseDate(String dateString,
+			SimpleDateFormat formatter) {
 		try {
-			Date DataConv = DtFormatador.parse(psDt);
-			return DataConv;
+			return formatter.parse(dateString);
 		} catch (Exception e) {
 			return new Date(0);
 		}
 	}
 
-	public final static Date cvDate(String psDt) {
-		try {
-			Date DataConv = DataFormatador.parse(psDt);
-			return DataConv;
-		} catch (Exception e) {
-			return new Date(0);
-		}
+	/**
+	 * Format a String with the defult formatter "dd/MM/yyyy"
+	 * 
+	 * @param psDt
+	 * @return
+	 */
+	public final static Date parseDate(String psDt) {
+		return parseDate(psDt, formatter);
 	}
 
 	public final static String format(Date pDt) {
-		return DataFormatador.format(pDt);
+		return formatter.format(pDt);
 	}
 
 	public final static String format(Date pDt, String psFormato) {
-		SimpleDateFormat DtFormatador = new SimpleDateFormat(psFormato);
-		return DtFormatador.format(pDt);
+		return new SimpleDateFormat(psFormato).format(pDt);
 	}
 
 	/**
@@ -127,14 +119,11 @@ public class Data {
 	 *            - Data DD/MM/YYYY
 	 * @return Sting - Data MM/DD/YYYY
 	 */
-	public final static String TextMMDDYYYY(String pdata) {
-		String aux;
+	public final static String textToMMDDYYYY(String pdata) {
+		String aux = "";
 		if (!pdata.equals("__/__/____") && !pdata.equals(""))
 			aux = pdata.substring(3, 5) + "/" + pdata.substring(0, 2) + "/"
 					+ pdata.substring(6);
-		else
-			aux = "";
-		// aux = "null";
 		return aux;
 	}
 
@@ -143,7 +132,7 @@ public class Data {
 	}
 
 	public static long msDate(String pData) {
-		Date d = cvDate(pData);
+		Date d = parseDate(pData);
 		return (d.getTime() + (long) 2209154400000L) / 1000 / 60 / 60 / 24;
 	}
 
