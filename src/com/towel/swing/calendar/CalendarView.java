@@ -2,12 +2,10 @@ package com.towel.swing.calendar;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -15,6 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
 
+import com.towel.awt.ann.Action;
+import com.towel.awt.ann.ActionManager;
 import com.towel.time.DateUtils;
 
 /**
@@ -27,9 +27,9 @@ import com.towel.time.DateUtils;
  * @author Fabio Rener
  * @modified Marcos Vasconcelos
  */
-public class CalendarView extends JPanel implements KeyListener,
-		ActionListener, FocusListener {
+public class CalendarView extends JPanel {
 	private DatePicker cal;
+	@Action(method = "openPopup")
 	private JButton button;
 	private JTextField txt;
 	private int cont = 0;
@@ -54,10 +54,9 @@ public class CalendarView extends JPanel implements KeyListener,
 
 		init();
 
-		button.addActionListener(this);
-		txt.addKeyListener(this);
-		txt.addFocusListener(this);
-
+		txt.addKeyListener(keyAdapter);
+		txt.addFocusListener(focusAdapter);
+		new ActionManager(this);
 	}
 
 	private void init() {
@@ -92,7 +91,14 @@ public class CalendarView extends JPanel implements KeyListener,
 		return txt.getText();
 	}
 
-	public void actionPerformed(ActionEvent e) {
+	/**
+	 * This is the action when button was pressed.
+	 * 
+	 * @see com.towel.awt.ann.Action
+	 * @see com.towel.awt.ann.ActionManager
+	 */
+	@SuppressWarnings("unused")
+	private void openPopup() {
 		String strDia = txt.getText();
 		if (DateUtils.isValidDate(strDia)) {
 			int dia = Integer.parseInt(strDia.substring(0, 2));
@@ -128,69 +134,52 @@ public class CalendarView extends JPanel implements KeyListener,
 	}
 
 	// ==================KEYLISTENER=================================================
-	/**
-	 * Metodo que informa que o campo foi alterado
-	 */
-	public void keyPressed(KeyEvent k) {
-	}
-
-	/**
-	 * Metodo que valida o que é digitado permitindo somente numeros
-	 */
-	public void keyTyped(KeyEvent k) {
-		char c = k.getKeyChar();
-		if ((getText().length() > 9) & (!getText().equals("__/__/____")))
-			k.consume();
-		else {
-			if ((c < '0') | (c > '9'))// & (c != '/'))
+	private KeyAdapter keyAdapter = new KeyAdapter() {
+		/**
+		 * Metodo que valida o que é digitado permitindo somente numeros
+		 */
+		public void keyTyped(KeyEvent k) {
+			char c = k.getKeyChar();
+			if ((getText().length() > 9) & (!getText().equals("__/__/____")))
 				k.consume();
 			else {
-				if (cont == 0) {
-					setText("");
-					cont = 1;
-				}
-				switch (getText().length()) {
-				case 2:
-					setText(getText() + "/");
-					break;
-				case 5:
-					setText(getText() + "/");
-					break;
+				if ((c < '0') | (c > '9'))// & (c != '/'))
+					k.consume();
+				else {
+					if (cont == 0) {
+						setText("");
+						cont = 1;
+					}
+					switch (getText().length()) {
+					case 2:
+						setText(getText() + "/");
+						break;
+					case 5:
+						setText(getText() + "/");
+						break;
+					}
 				}
 			}
 		}
-	}
+	};
 
-	public void keyReleased(KeyEvent k) {
-	}
-
-	// ==================FOCUSKEYLISTENER============================================
-	public void focusGained(FocusEvent fe) {
-	}
+	private FocusAdapter focusAdapter = new FocusAdapter() {
+		public void focusLost(FocusEvent fe) {
+			if (!getText().equals("__/__/____") & !getText().equals("")) {
+				if (!DateUtils.isValidDate(getText())) {
+					JOptionPane.showMessageDialog(null, "Data Inválida");
+				}
+			}
+		}
+	};
 
 	/**
 	 * Quando o componente perde o foco é validado a data
 	 */
-	public void focusLost(FocusEvent fe) {
-		if (!getText().equals("__/__/____") & !getText().equals("")) {
-			if (!DateUtils.isValidDate(getText())) {
-				JOptionPane.showMessageDialog(null, "Data Inválida");
-			}
-		}
-	}
 
 	public void setEnabled(boolean t) {
 		txt.setEnabled(t);
 		button.setEnabled(t);
-	}
-
-	/**
-	 * Metodo que deixa o botao Visivel ou Invisivel
-	 * 
-	 * @Param true = visivel
-	 * @Param false = invivel
-	 **/
-	public void setBotaoVisivel(boolean t) {
-		button.setVisible(t);
+		super.setEnabled(t);
 	}
 }
