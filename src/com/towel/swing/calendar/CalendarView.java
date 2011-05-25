@@ -6,6 +6,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Calendar;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -89,6 +90,12 @@ public class CalendarView extends JPanel {
 	 */
 	public String getText() {
 		return txt.getText();
+	}
+	
+	public Calendar getSelectedDate(){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(DateUtils.parseDate(getText()));
+		return cal;
 	}
 
 	/**

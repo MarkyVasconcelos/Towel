@@ -1,5 +1,9 @@
 package test.swing.calendar;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -9,8 +13,17 @@ public class CalendarViewTest {
 	public CalendarViewTest() {
 		JFrame frame = new JFrame("CalendarView");
 		JPanel content=  new JPanel();
-		CalendarView view = new CalendarView();
+		final CalendarView view = new CalendarView();
+		JButton button = new JButton("X");
 		content.add(view);
+		content.add(button);
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(view.getSelectedDate());
+			}
+		});
+		
 		
 		frame.setContentPane(content);
 		frame.pack();
