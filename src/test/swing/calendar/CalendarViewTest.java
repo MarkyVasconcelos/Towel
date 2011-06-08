@@ -12,7 +12,7 @@ import com.towel.swing.calendar.CalendarView;
 public class CalendarViewTest {
 	public CalendarViewTest() {
 		JFrame frame = new JFrame("CalendarView");
-		JPanel content=  new JPanel();
+		JPanel content = new JPanel();
 		final CalendarView view = new CalendarView();
 		JButton button = new JButton("X");
 		content.add(view);
@@ -23,15 +23,14 @@ public class CalendarViewTest {
 				System.out.println(view.getSelectedDate());
 			}
 		});
-		
-		
+
 		frame.setContentPane(content);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
-	
+
 	public static void main(String[] args) {
 		new CalendarViewTest();
 	}
