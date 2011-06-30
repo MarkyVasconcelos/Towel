@@ -14,6 +14,7 @@ public class CalendarViewTest {
 		JFrame frame = new JFrame("CalendarView");
 		JPanel content = new JPanel();
 		final CalendarView view = new CalendarView();
+		view.setTodayString("Hoje");
 		JButton button = new JButton("X");
 		content.add(view);
 		content.add(button);

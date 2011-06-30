@@ -8,15 +8,11 @@ import com.towel.bean.Formatter;
 import com.towel.el.annotation.Resolvable;
 
 public class Person {
-//	@Resolvable(colName = "Name")
 	private String name;
-	@Resolvable(colName = "Age")
 	private int age;
-	@Resolvable(colName = "Live")
 	private boolean live;
 	@Resolvable(colName = "Birth", formatter = DateFormatter.class)
 	private GregorianCalendar birth;
-	@Resolvable
 	private double money;
 	private Person parent; 
 

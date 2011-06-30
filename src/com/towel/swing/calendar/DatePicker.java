@@ -294,6 +294,10 @@ public class DatePicker extends JPanel {
 			populateCells();
 		}
 	}
+	
+	public void setTodayString(String todayString) {
+		this.today.setText(todayString);
+	}
 
 	private JLabel createLabelWithBorder(String text) {
 		JLabel label = new JLabel(text);

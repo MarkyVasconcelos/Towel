@@ -34,6 +34,7 @@ public class CalendarView extends JPanel {
 	private JButton button;
 	private JTextField txt;
 	private int cont = 0;
+	private String todayText;
 
 	private JWindow glassPane;
 
@@ -116,6 +117,7 @@ public class CalendarView extends JPanel {
 		} else {
 			cal = new DatePicker(this, 0, 0, 0);
 		}
+		cal.setTodayString(todayText);
 
 		JPanel content = new JPanel();
 		content.setLayout(null);
@@ -169,6 +171,10 @@ public class CalendarView extends JPanel {
 			}
 		}
 	};
+	
+	public void setTodayString(String todayString) {
+		this.todayText = todayString;
+	}
 
 	private FocusAdapter focusAdapter = new FocusAdapter() {
 		public void focusLost(FocusEvent fe) {
