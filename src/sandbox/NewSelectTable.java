@@ -1,4 +1,4 @@
-package com.towel.swing.table;
+package sandbox;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -34,11 +34,18 @@ import com.towel.io.Closable;
 import com.towel.swing.ModalWindow;
 import com.towel.swing.event.ObjectSelectListener;
 import com.towel.swing.event.SelectEvent;
+import com.towel.swing.table.ObjectTableModel;
 
 
 
-public class SelectTable<T> {
+public class NewSelectTable<T> {
+	public static final int SINGLE = 0;
+	public static final int LIST = 1;
+	
 	private List<ObjectSelectListener> listeners;
+	private List<Closable> closableHook;
+	
+	
 	private JTable table;
 	private Paginator<T> data;
 	private ObjectTableModel<T> model;
@@ -51,31 +58,28 @@ public class SelectTable<T> {
 	private int colFilterIndex;
 	private JLabel pageLabel;
 	private int selectType;
-	public static final int SINGLE = 0;
-	public static final int LIST = 1;
-	private List<Closable> closableHook;
 
 	private Object selected;
 	
 
-	public SelectTable(FieldResolver cols[], java.util.List<T> data) {
+	public NewSelectTable(FieldResolver cols[], java.util.List<T> data) {
 		this(cols, new ListPaginator<T>(data, 25));
 	}
 
-	public SelectTable(AnnotationResolver resolver, String fields,
+	public NewSelectTable(AnnotationResolver resolver, String fields,
 			Paginator<T> paginator) {
 		this(resolver.resolve(fields), paginator, SINGLE, 400);
 	}
 
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator) {
+	public NewSelectTable(FieldResolver cols[], Paginator<T> paginator) {
 		this(cols, paginator, SINGLE, 400);
 	}
 
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator, int w) {
+	public NewSelectTable(FieldResolver cols[], Paginator<T> paginator, int w) {
 		this(cols, paginator, SINGLE, w);
 	}
 
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator,
+	public NewSelectTable(FieldResolver cols[], Paginator<T> paginator,
 			int selectType, int width) {
 		colFilterIndex = 0;
 		listeners = new ArrayList<ObjectSelectListener>();

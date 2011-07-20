@@ -9,13 +9,33 @@ import com.towel.el.annotation.Resolvable;
 
 public class Person {
 	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public void setLive(boolean live) {
+		this.live = live;
+	}
+
 	private int age;
 	private boolean live;
 	@Resolvable(colName = "Birth", formatter = DateFormatter.class)
 	private GregorianCalendar birth;
 	private double money;
-	private Person parent; 
-
+	private Person parent;
 
 	public Person(String name, int age, boolean live, String birth) {
 		this.name = name;
@@ -29,13 +49,12 @@ public class Person {
 		}
 	}
 
-
 	public Person(String name, int age, boolean live) {
 		this.name = name;
 		this.age = age;
 		this.live = live;
 	}
-	
+
 	public Person(double d) {
 		this.age = (int) d;
 	}
@@ -43,6 +62,9 @@ public class Person {
 	public Person(String str, double d) {
 		this.name = str;
 		this.age = (int) d;
+	}
+
+	public Person() {
 	}
 
 	private class DateFormatter implements Formatter {
@@ -78,7 +100,6 @@ public class Person {
 	public String toString() {
 		return "Name: " + name + " age: " + age;
 	}
-	
 
 	public double getMoney() {
 		return money;
@@ -88,13 +109,17 @@ public class Person {
 		this.money = money;
 	}
 
-
 	public void setParent(Person parent) {
 		this.parent = parent;
 	}
 
-
 	public Person getParent() {
 		return parent;
+	}
+
+	public void printAttrs() {
+		System.out.println("Name: " + getName());
+		System.out.println("Age: " + getAge());
+		System.out.println("Live?: " + isLive());
 	}
 }
