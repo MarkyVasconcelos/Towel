@@ -36,16 +36,13 @@ import com.towel.swing.event.ObjectSelectListener;
 import com.towel.swing.event.SelectEvent;
 import com.towel.swing.table.ObjectTableModel;
 
-
-
 public class NewSelectTable<T> {
 	public static final int SINGLE = 0;
 	public static final int LIST = 1;
-	
+
 	private List<ObjectSelectListener> listeners;
 	private List<Closable> closableHook;
-	
-	
+
 	private JTable table;
 	private Paginator<T> data;
 	private ObjectTableModel<T> model;
@@ -60,7 +57,6 @@ public class NewSelectTable<T> {
 	private int selectType;
 
 	private Object selected;
-	
 
 	public NewSelectTable(FieldResolver cols[], java.util.List<T> data) {
 		this(cols, new ListPaginator<T>(data, 25));
@@ -79,12 +75,10 @@ public class NewSelectTable<T> {
 		this(cols, paginator, SINGLE, w);
 	}
 
-	public NewSelectTable(FieldResolver cols[], Paginator<T> paginator,
-			int selectType, int width) {
+	public NewSelectTable(ObjectTableModel<T> model, Paginator<T> paginator) {
 		colFilterIndex = 0;
 		listeners = new ArrayList<ObjectSelectListener>();
-		this.selectType = selectType;
-		model = new ObjectTableModel<T>(cols);
+		this.model = model;
 		data = paginator;
 		model.setData(data.nextResult());
 		table = new JTable(model);
@@ -93,8 +87,8 @@ public class NewSelectTable<T> {
 		content = new JPanel();
 		JScrollPane pane = new JScrollPane();
 		pane.setViewportView(table);
-		pane.setPreferredSize(new Dimension(width, 400));
-		pane.setMinimumSize(new Dimension(width, 400));
+		pane.setPreferredSize(new Dimension(120, 400));
+		pane.setMinimumSize(new Dimension(120, 400));
 		content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
 		rowSorter = new TableRowSorter<ObjectTableModel<T>>(model);
 		table.setRowSorter(rowSorter);
@@ -136,6 +130,11 @@ public class NewSelectTable<T> {
 		});
 
 		table.addMouseListener(new SelectionListener());
+	}
+
+	public NewSelectTable(FieldResolver cols[], Paginator<T> paginator,
+			int selectType, int width) {
+		
 	}
 
 	public JTable getTable() {
@@ -260,8 +259,8 @@ public class NewSelectTable<T> {
 
 		searchButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				data.filter(filterText.getText(), model
-						.getColumnResolver(colFilterIndex));
+				data.filter(filterText.getText(),
+						model.getColumnResolver(colFilterIndex));
 				firstResult();
 			}
 		});
@@ -326,8 +325,8 @@ public class NewSelectTable<T> {
 			data.setCurrentPage(data.getCurrentPage() - 2);
 			model.setData(data.nextResult());
 			pageLabel.setText((new StringBuilder(String.valueOf(String
-					.valueOf(data.getCurrentPage())))).append("/").append(
-					data.getMaxPage() + 1).toString());
+					.valueOf(data.getCurrentPage())))).append("/")
+					.append(data.getMaxPage() + 1).toString());
 			return;
 		}
 	}
@@ -339,8 +338,8 @@ public class NewSelectTable<T> {
 			}
 			model.setData(data.nextResult());
 			pageLabel.setText((new StringBuilder(String.valueOf(String
-					.valueOf(data.getCurrentPage())))).append("/").append(
-					data.getMaxPage() + 1).toString());
+					.valueOf(data.getCurrentPage())))).append("/")
+					.append(data.getMaxPage() + 1).toString());
 		} catch (Exception e) {
 			return;
 		}
