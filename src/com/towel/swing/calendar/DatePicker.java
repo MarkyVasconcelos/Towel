@@ -1,308 +1,754 @@
+/*
+ * @(#)DatePicker.java
+ * 
+ * Copyright 2011 Marcos Vasconcelos
+ * 
+ * Towel is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Towel is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.towel.swing.calendar;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 import javax.swing.JButton;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Calendar;
+import java.util.Locale;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
- * DatePicker is a Component with displays a grid of days to be selected.
+ * <code>DatePicker<code> is a component which allows you to select a date
+ * 
+ * @author Fabio Rener
+ * @author Marcos Vasconcelos
+ * @modified Eric Yuzo
  */
 public class DatePicker extends JPanel {
+
 	private CalendarView calendar;
 
-	private JLabel previousMonth;
-	private JLabel nextMonth;
+	private Calendar selectedDate;
+
+	private JPanel monthPanel;
+	private JPanel daysPanel;
+
+	// Month navigation labels
+	private JLabel previousMonthLabel;
+	private JLabel nextMonthLabel;
 	private JLabel monthLabel;
+	// Year navigation labels
+	private JLabel previousYearLabel;
+	private JLabel nextYearLabel;
+	private JLabel yearLabel;
 
-	private JLabel weekDaysLabel;
-	private JLabel dayLabels[] = new JLabel[42];
-	private JButton today = new JButton("Today");
+	private JLabel[] weekDayLabels;
+	private JLabel[] dayLabels;
 
-	private Calendar actualSelection;
-	private String selectedDay;
-	private int selectedDayIndex;
-	private MouseListener listener;
+	private JButton todayButton;
 
-	public static String[] monthNames;
-	public static String[] weekDays;
+	private Locale locale;
+	private DateFormat dateFormat;
 
-	static {
-		monthNames = new String[12];
+	private String[] monthNames;
+	private String[] weekDayNames;
 
-		monthNames[0] = "Janeiro/";
-		monthNames[1] = "Fevereiro/";
-		monthNames[2] = "Março/";
-		monthNames[3] = "Abril/";
-		monthNames[4] = "Maio/";
-		monthNames[5] = "Junho/";
-		monthNames[6] = "Julho/";
-		monthNames[7] = "Agosto/";
-		monthNames[8] = "Setembro/";
-		monthNames[9] = "Outubro/";
-		monthNames[10] = "Novembro/";
-		monthNames[11] = "Dezembro/";
+	// Background colors
+	private Color headerBackground;
+	private Color weekDaysBackground;
+	private Color dayPickerBackground;
+	private Color selectedDayBackground;
+	// Foreground colors
+	private Color headerForeground;
+	private Color weekDaysForeground;
+	private Color dayPickerForeground;
+	private Color selectedDayForeground;
 
-		weekDays = new String[7];
-		weekDays[0] = "D";
-		weekDays[1] = "S";
-		weekDays[2] = "T";
-		weekDays[3] = "Q";
-		weekDays[4] = "Q";
-		weekDays[5] = "S";
-		weekDays[6] = "S";
+	/**
+	 * Constructs a new <code>DatePicker</code> associated to default locale.
+	 */
+	public DatePicker() {
+		this(null, null);
+	}
+	
+	/**
+	 * Creates a new <code>DatePicker</code> associated to default locale
+	 * and using specified date format pattern to format selected date.
+	 * 
+	 * @param pattern
+	 *            the pattern describing the date format
+	 */
+	public DatePicker(String pattern) {
+		this(null, new SimpleDateFormat(pattern));
 	}
 
 	/**
-	 * Construtor
+	 * Constructs a new <code>DatePicker</code> associated to the given locale
+	 * and using given <code>dateFormat</code>.
+	 * 
+	 * @param locale
+	 *            the locale associated to this <code>DatePicker</code>
+	 * @param dateFormat
+	 *            the <code>DateFormat</code> used to format selected date
+	 */
+	public DatePicker(Locale locale, DateFormat dateFormat) {
+		if (locale == null) {
+			locale = Locale.getDefault();
+		}
+		this.locale = locale;
+
+		if (dateFormat == null) {
+			dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
+		}
+		dateFormat.setLenient(false);
+		this.dateFormat = dateFormat;
+
+		selectedDate = getToday();
+
+		init();
+		refresh();
+	}
+
+	/**
+	 * Constructs a new <code>DatePicker</code>.
 	 * 
 	 * @param cal
-	 *            - CalendarView from where this is opening from
+	 *            this <code>DatePicker</code>'s owner
 	 * @param day
-	 *            Current day, use zero to show current day
+	 *            selected day. This value must be greater than zero to be set
 	 * @param month
-	 *            Current month (Can be zero if day is zero two)
+	 *            selected month. This value is only set if day is greater than
+	 *            zero
 	 * @param year
-	 *            Current year (Can be zero if day is zero two)
+	 *            selected year. This value is only set if day is greater than
+	 *            zero
 	 */
 	public DatePicker(CalendarView cal, int day, int month, int year) {
 		calendar = cal;
-		listener = new MouseListener();
+		locale = Locale.getDefault();
 
-		previousMonth = createLabelWithBorder("<");
-		nextMonth = createLabelWithBorder(">");
-		monthLabel = createLabelWithBorder("");
-
-		selectedDay = "0";
-
-		actualSelection = Calendar.getInstance();
-		if (day == 0) {
-			actualSelection.set(Calendar.DAY_OF_MONTH, getToday());
-			actualSelection.set(Calendar.MONTH, getCurrentMonth());
-			actualSelection.set(Calendar.YEAR, getCurrentYear());
-		} else {
-			actualSelection.set(Calendar.DAY_OF_MONTH, day);
-			actualSelection.set(Calendar.MONTH, month);
-			actualSelection.set(Calendar.YEAR, year);
+		selectedDate = getToday();
+		if (day > 0) {
+			selectedDate.set(Calendar.DAY_OF_MONTH, day);
+			selectedDate.set(Calendar.MONTH, month - 1);
+			selectedDate.set(Calendar.YEAR, year);
 		}
 
 		init();
-
-		String monthName = getMonthName(actualSelection.get(Calendar.MONTH));
-		monthLabel.setText(monthName);
-
-		setSelectedDay(populateCells());
-		this.setBounds(0, 0, 140, 145);
+		refresh();
 	}
 
 	private void init() {
-		setLayout(null);
+		headerBackground = Color.LIGHT_GRAY;
+		weekDaysBackground = new Color(63, 124, 124);
+		dayPickerBackground = UIManager.getColor("Label.background");
+		selectedDayBackground = dayPickerBackground.darker();
 
-		Font fontHeader = new Font("SansSerif", Font.BOLD, 11);
-		Font fontCells = new Font("SansSerif", Font.PLAIN, 11);
+		headerForeground = Color.BLACK;
+		weekDaysForeground = Color.WHITE;
+		dayPickerForeground = UIManager.getColor("Label.foreground");
+		selectedDayForeground = UIManager.getColor("Label.foreground");
 
-		previousMonth.setFont(fontHeader);
-		previousMonth.setBounds(0, 0, 15, 20);
-		previousMonth.setHorizontalAlignment(SwingConstants.CENTER);
-		previousMonth.setBackground(Color.lightGray);
-		previousMonth.setOpaque(true);
-		previousMonth.addMouseListener(listener);
-		add(previousMonth);
+		setLayout(new BorderLayout());
+		add(getMonthPanel(), BorderLayout.NORTH);
+		add(getDaysPanel(), BorderLayout.CENTER);
+		add(getTodayButton(), BorderLayout.SOUTH);
 
-		nextMonth.setFont(fontHeader);
-		nextMonth.setBounds(125, 0, 15, 20);
-		nextMonth.setHorizontalAlignment(SwingConstants.CENTER);
-		nextMonth.setBackground(Color.lightGray);
-		nextMonth.setOpaque(true);
-		nextMonth.addMouseListener(listener);
-		add(nextMonth);
+		updateWeekDays(locale);
+	}
 
-		monthLabel.setFont(fontHeader);
-		monthLabel.setBounds(15, 0, 110, 20);
-		monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		monthLabel.setBackground(Color.lightGray);
-		monthLabel.setOpaque(true);
-		monthLabel.addMouseListener(listener);
-		add(monthLabel);
+	private JPanel getMonthPanel() {
+		if (monthPanel == null) {
+			monthPanel = new JPanel(new GridBagLayout());
 
-		StringBuilder weekDays = new StringBuilder();
-		for (String s : DatePicker.weekDays)
-			weekDays.append(s).append("   ");
-		weekDays.delete(weekDays.length() - 3, weekDays.length());
+			previousMonthLabel = createLabelWithBorder("<");
+			previousMonthLabel.setBackground(headerBackground);
+			previousMonthLabel.setForeground(headerForeground);
+			previousMonthLabel.addMouseListener(new NavigationListener() {
+				@Override
+				public void execute() {
+					int oldMonth = selectedDate.get(Calendar.MONTH);
+					selectedDate.add(Calendar.MONTH, -1);
+					firePropertyChange("month", oldMonth, oldMonth - 1);
+					if (oldMonth == 0) {
+						int year = selectedDate.get(Calendar.YEAR);
+						firePropertyChange("year", year + 1, year);
+					}
+					refresh();
+				}
+			});
+			monthPanel.add(previousMonthLabel);
 
-		weekDaysLabel = new JLabel(weekDays.toString());
-		weekDaysLabel.setFont(fontHeader);
-		weekDaysLabel.setBounds(0, 20, 139, 15);
-		weekDaysLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		weekDaysLabel.setBackground(new Color(63, 124, 124));
-		weekDaysLabel.setOpaque(true);
-		weekDaysLabel.addMouseListener(listener);
-		add(weekDaysLabel);
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			monthLabel = createLabelWithBorder("");
+			monthLabel.setBackground(headerBackground);
+			monthLabel.setForeground(headerForeground);
+			monthPanel.add(monthLabel, gbc);
 
-		int x = 0;
-		int y = 35;
-		int col = 0;
-		for (int i = 0; i < 42; i++) {
-			dayLabels[i] = createLabelWithBorder("");
-			dayLabels[i].setBounds(x, y, 20, 15);
-			dayLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
-			dayLabels[i].setFont(fontCells);
-			dayLabels[i].setOpaque(false);
-			dayLabels[i].addMouseListener(listener);
-			add(dayLabels[i]);
-			col++;
-			if (col == 7) {
-				col = 0;
-				y += 15;
-				x = 0;
-			} else {
-				x += 20;
+			nextMonthLabel = createLabelWithBorder(">");
+			nextMonthLabel.setBackground(headerBackground);
+			nextMonthLabel.setForeground(headerForeground);
+			nextMonthLabel.addMouseListener(new NavigationListener() {
+				@Override
+				public void execute() {
+					int oldMonth = selectedDate.get(Calendar.MONTH);
+					selectedDate.add(Calendar.MONTH, 1);
+					firePropertyChange("month", oldMonth, oldMonth + 1);
+					if (oldMonth == 11) {
+						int year = selectedDate.get(Calendar.YEAR);
+						firePropertyChange("year", year - 1, year);
+					}
+					refresh();
+				}
+			});
+			monthPanel.add(nextMonthLabel);
+
+			previousYearLabel = createLabelWithBorder("<");
+			previousYearLabel.setBackground(headerBackground);
+			previousYearLabel.setForeground(headerForeground);
+			previousYearLabel.addMouseListener(new NavigationListener() {
+				@Override
+				public void execute() {
+					int oldYear = selectedDate.get(Calendar.YEAR);
+					selectedDate.add(Calendar.YEAR, -1);
+					firePropertyChange("year", oldYear, oldYear - 1);
+					refresh();
+				}
+			});
+			monthPanel.add(previousYearLabel);
+
+			yearLabel = createLabelWithBorder("");
+			yearLabel.setBackground(headerBackground);
+			yearLabel.setForeground(headerForeground);
+			monthPanel.add(yearLabel);
+
+			nextYearLabel = createLabelWithBorder(">");
+			nextYearLabel.setBackground(headerBackground);
+			nextYearLabel.setForeground(headerForeground);
+			nextYearLabel.addMouseListener(new NavigationListener() {
+				@Override
+				public void execute() {
+					int oldYear = selectedDate.get(Calendar.YEAR);
+					selectedDate.add(Calendar.YEAR, 1);
+					firePropertyChange("year", oldYear, oldYear + 1);
+					refresh();
+				}
+			});
+			monthPanel.add(nextYearLabel);
+		}
+		return monthPanel;
+	}
+
+	private JPanel getDaysPanel() {
+		if (daysPanel == null) {
+			daysPanel = new JPanel(new GridLayout(7, 7));
+
+			weekDayLabels = new JLabel[7];
+			for (int i = 0; i < 7; i++) {
+				weekDayLabels[i] = new JLabel();
+				weekDayLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+				weekDayLabels[i].setBackground(weekDaysBackground);
+				weekDayLabels[i].setForeground(weekDaysForeground);
+				weekDayLabels[i].setOpaque(true);
+				daysPanel.add(weekDayLabels[i]);
+			}
+
+			dayLabels = new JLabel[42];
+			for (int i = 0; i < 42; i++) {
+				dayLabels[i] = createLabelWithBorder("");
+				dayLabels[i].setBackground(dayPickerBackground);
+				dayLabels[i].setForeground(dayPickerForeground);
+				dayLabels[i].addMouseListener(new DaySelectionListener());
+				daysPanel.add(dayLabels[i]);
 			}
 		}
-		today.setBounds(0, 125, 140, 20);
-		today.setMnemonic('H');
-		today.setOpaque(true);
-		today.addMouseListener(listener);
-		add(today);
+		return daysPanel;
 	}
 
-	private int getToday() {
-		return Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
-	}
-
-	private int getCurrentMonth() {
-		return Integer.parseInt(new SimpleDateFormat("MM").format(new Date())) - 1;
-	}
-
-	private int getCurrentYear() {
-		return Integer
-				.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
-	}
-
-	private int populateCells() {
-		Calendar now = Calendar.getInstance();
-		now.clear(Calendar.DATE);
-		now.set(actualSelection.get(Calendar.YEAR),
-				actualSelection.get(Calendar.MONTH), 1);
-		int weekDay = now.get(Calendar.DAY_OF_WEEK);
-		int monthDay = now.getActualMaximum(Calendar.DAY_OF_MONTH);
-		int i = 0;
-
-		int day = 1;
-
-		for (int j = 0; j < 42; j++) {
-			if ((j < weekDay - 1) || (j > (monthDay + weekDay - 2)))
-				dayLabels[j].setText("");
-			else {
-				dayLabels[j].setText(String.valueOf(day));
-				if (actualSelection.get(Calendar.DAY_OF_MONTH) == day)
-					i = j;
-
-				day++;
-			}
-		}
-		return i;
-	}
-
-	private String getMonthName(int month) {
-		return monthNames[month] + actualSelection.get(Calendar.YEAR);
-	}
-
-	/**
-	 * Retorna a data Selecionada
-	 * 
-	 * @return String - Data
-	 */
-	public String getDate() {
-
-		StringBuilder result = new StringBuilder();
-
-		int day = Integer.parseInt(selectedDay);
-
-		if (day == 0) {
-			selectedDay = String.valueOf(actualSelection
-					.get(Calendar.DAY_OF_MONTH));
-			day = Integer.parseInt(selectedDay);
-		}
-
-		if (day < 10)
-			result.append("0");
-		result.append(selectedDay).append("/");
-
-		if (actualSelection.get(Calendar.MONTH) < 11)
-			result.append("0");
-
-		result.append(actualSelection.get(Calendar.MONTH) + 1).append("/")
-				.append(actualSelection.get(Calendar.YEAR));
-		return result.toString();
-	}
-
-	/**
-	 * Method wich select the day (Highlight it)
-	 */
-	public void setSelectedDay(int x) {
-		dayLabels[x].setBackground(new Color(72, 164, 255));
-		dayLabels[x].setForeground(Color.white);
-		selectedDayIndex = x;
-	}
-
-	private class MouseListener extends MouseAdapter {
-		public void mouseClicked(MouseEvent e) {
-			for (int i = 1; i < 42; i++) {
-				if (e.getSource() == dayLabels[i]) {
-					if (dayLabels[i].getText() != "") {
-						setSelectedDay(i);
-						selectedDay = String.valueOf(dayLabels[i].getText());
+	private JButton getTodayButton() {
+		if (todayButton == null) {
+			todayButton = new JButton("Today");
+			todayButton.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					selectedDate = getToday();
+					setSelectedDay(selectedDate.get(Calendar.DAY_OF_MONTH));
+					firePropertyChange("day", 0,
+							selectedDate.get(Calendar.DAY_OF_MONTH));
+					if (calendar != null) {
 						calendar.dateSelected(getDate());
 					}
 				}
+			});
+		}
+		return todayButton;
+	}
+
+	private void updateWeekDays(Locale locale) {
+		DateFormatSymbols symbols = new DateFormatSymbols(locale);
+		weekDayNames = symbols.getShortWeekdays();
+		monthNames = symbols.getMonths();
+		for (int i = 0; i < 7; i++) {
+			weekDayLabels[i].setText(weekDayNames[i + 1]);
+		}
+	}
+
+	private String getMonthName(int month) {
+		return monthNames[month];
+	}
+
+	private void refresh() {
+		String monthName = getMonthName(selectedDate.get(Calendar.MONTH));
+		monthLabel.setText(monthName);
+		String currentYear = String.valueOf(selectedDate.get(Calendar.YEAR));
+		yearLabel.setText(currentYear);
+		populateCells();
+		setSelectedDay(selectedDate.get(Calendar.DAY_OF_MONTH));
+	}
+
+	private void populateCells() {
+		Calendar cal = getSelectedDate();
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		int weekDay = cal.get(Calendar.DAY_OF_WEEK);
+		int monthDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+		int day = 1;
+
+		for (int i = 0; i < 42; i++) {
+			if ((i < weekDay - 1) || (i > (monthDay + weekDay - 2))) {
+				dayLabels[i].setText("");
+			} else {
+				dayLabels[i].setText(String.valueOf(day));
+				day++;
 			}
+			dayLabels[i].setBackground(dayPickerBackground);
+			dayLabels[i].setForeground(dayPickerForeground);
+		}
+	}
 
-			if (e.getSource() == today) {
-				selectedDay = String.valueOf(getToday());
-				actualSelection.set(Calendar.MONTH, getCurrentMonth());
-				actualSelection.set(Calendar.YEAR, getCurrentYear());
+	private Calendar getToday() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal;
+	}
 
-				setSelectedDay(actualSelection.get(Calendar.DAY_OF_MONTH) + 1);
-				calendar.dateSelected(getDate());
-				return;
+	/**
+	 * Returns a string representing the selected date.
+	 * 
+	 * @return a string representing the selected date
+	 */
+	public String getDate() {
+		return dateFormat.format(getSelectedDate().getTime());
+	}
+
+	/**
+	 * Returns a copy of selected <code>Calendar</code>.
+	 * 
+	 * @return a copy of selected <code>Calendar</code>
+	 */
+	public Calendar getSelectedDate() {
+		return (Calendar) selectedDate.clone();
+	}
+
+	/**
+	 * Sets the selected <code>Calendar</code>.
+	 * 
+	 * @param calendar
+	 *            the new selected <code>Calendar</code>
+	 */
+	public void setSelectedDate(Calendar calendar) {
+		if (calendar != null) {
+			Calendar oldDate = getSelectedDate();
+			this.selectedDate = getToday();
+			this.selectedDate.set(calendar.get(Calendar.YEAR),
+					calendar.get(Calendar.MONTH),
+					calendar.get(Calendar.DAY_OF_MONTH));
+			firePropertyChange("date", oldDate, getSelectedDate());
+			refresh();
+		}
+	}
+
+	/**
+	 * Changes the selected day.
+	 * <p>
+	 * <strong>Warning:</strong> It's not recommended to use this method. Prefer
+	 * to use {@link #setSelectedDate(Calendar)}.
+	 * 
+	 * @param newDay
+	 *            the day to select
+	 */
+	public void setSelectedDay(int newDay) {
+		String day;
+		for (int i = 0; i < 42; i++) {
+			day = dayLabels[i].getText();
+			if (day.equals(Integer.toString(newDay))) {
+				selectedDate.set(Calendar.DAY_OF_MONTH, newDay);
+				dayLabels[i].setBackground(selectedDayBackground);
+				dayLabels[i].setForeground(selectedDayForeground);
+				break;
 			}
+		}
+	}
 
-			// If it's not 'today' pressed, then it is month 'next' or
-			// 'previous'
+	/**
+	 * Returns the locale associated to this <code>DatePicker</code>. The locale
+	 * is used to get appropriate week day names and month names.
+	 * 
+	 * @return the locale associated to this <code>DatePicker</code>
+	 */
+	public Locale getLocale() {
+		return locale;
+	}
 
-			dayLabels[selectedDayIndex].setBackground(Color.lightGray);
-			dayLabels[selectedDayIndex].setForeground(Color.black);
+	/**
+	 * Changes the locale associated to this <code>DatePicker</code>. The locale
+	 * is used to get appropriate week day names and month names.
+	 * 
+	 * @param locale
+	 *            the new locale
+	 */
+	public void setLocale(Locale locale) {
+		if (locale != null) {
+			this.locale = locale;
+			updateWeekDays(locale);
+		}
+	}
 
-			if (e.getSource() == nextMonth)
-				actualSelection.add(Calendar.MONTH, 1);
+	/**
+	 * Returns the <code>dateFormat</code> used to format selected date.
+	 * 
+	 * @return the <code>dateFormat</code> used to format selected date
+	 */
+	public DateFormat getDateFormat() {
+		return dateFormat;
+	}
 
-			if (e.getSource() == previousMonth)
-				actualSelection.add(Calendar.MONTH, -1);
-
-			String monthName = getMonthName(actualSelection.get(Calendar.MONTH));
-			monthLabel.setText(monthName);
-			populateCells();
+	/**
+	 * Changes the <code>dateFormat</code> used to format selected date.
+	 * 
+	 * @param locale
+	 *            the new <code>dateFormat</code>
+	 */
+	public void setDateFormat(DateFormat dateFormat) {
+		if (dateFormat != null) {
+			this.dateFormat = dateFormat;
 		}
 	}
 	
+	/**
+	 * Changes the date format's pattern.
+	 * 
+	 * @param pattern
+	 *            the pattern describing the date format
+	 */
+	public void setPattern(String pattern) {
+		setDateFormat(new SimpleDateFormat(pattern));
+	}
+
+	/**
+	 * Returns the background color for header labels used to select month and
+	 * year.
+	 * 
+	 * @return the background color for header labels
+	 */
+	public Color getHeaderBackground() {
+		return headerBackground;
+	}
+
+	/**
+	 * Sets the background color for header labels used to select month and
+	 * year.
+	 * 
+	 * @param headerBg
+	 *            the background color for header labels
+	 */
+	public void setHeaderBackground(Color headerBg) {
+		if (headerBg != null) {
+			this.headerBackground = headerBg;
+			previousMonthLabel.setBackground(headerBg);
+			nextMonthLabel.setBackground(headerBg);
+			monthLabel.setBackground(headerBg);
+			previousYearLabel.setBackground(headerBg);
+			nextYearLabel.setBackground(headerBg);
+			yearLabel.setBackground(headerBg);
+		}
+	}
+
+	/**
+	 * Returns the background color for week day labels.
+	 * 
+	 * @return the background color for week day labels
+	 */
+	public Color getWeekDaysBackground() {
+		return weekDaysBackground;
+	}
+
+	/**
+	 * Sets the background color for week day labels.
+	 * 
+	 * @param weekDaysBg
+	 *            the background color for week day labels
+	 */
+	public void setWeekDaysBackground(Color weekDaysBg) {
+		if (weekDaysBg != null) {
+			this.weekDaysBackground = weekDaysBg;
+			for (int i = 0; i < 7; i++) {
+				weekDayLabels[i].setBackground(weekDaysBg);
+			}
+		}
+	}
+
+	/**
+	 * Returns the background color for day picker labels.
+	 * 
+	 * @return the background color for day picker labels
+	 */
+	public Color getDayPickerBackground() {
+		return dayPickerBackground;
+	}
+
+	/**
+	 * Sets the background color for day picker labels.
+	 * 
+	 * @param dayPickerBg
+	 *            the background color for day picker labels
+	 */
+	public void setDayPickerBackground(Color dayPickerBg) {
+		if (dayPickerBg != null) {
+			this.dayPickerBackground = dayPickerBg;
+			refresh();
+		}
+	}
+
+	/**
+	 * Returns the background color for selected day label.
+	 * 
+	 * @return the background color for selected day label
+	 */
+	public Color getSelectedDayBackground() {
+		return selectedDayBackground;
+	}
+
+	/**
+	 * Sets the background color for selected day label.
+	 * 
+	 * @param selectedDayBg
+	 *            the background color for selected day label
+	 */
+	public void setSelectedDayBackground(Color selectedDayBg) {
+		if (selectedDayBg != null) {
+			this.selectedDayBackground = selectedDayBg;
+			refresh();
+		}
+	}
+
+	/**
+	 * Returns the foreground color for header labels used to select month and
+	 * year.
+	 * 
+	 * @return the foreground color for header labels
+	 */
+	public Color getHeaderForeground() {
+		return headerForeground;
+	}
+
+	/**
+	 * Sets the foreground color for header labels used to select month and
+	 * year.
+	 * 
+	 * @param headerFg
+	 *            the foreground color for header labels
+	 */
+	public void setHeaderForeground(Color headerFg) {
+		if (headerFg != null) {
+			this.headerForeground = headerFg;
+			previousMonthLabel.setForeground(headerFg);
+			nextMonthLabel.setForeground(headerFg);
+			monthLabel.setForeground(headerFg);
+			previousYearLabel.setForeground(headerFg);
+			nextYearLabel.setForeground(headerFg);
+			yearLabel.setForeground(headerFg);
+		}
+	}
+
+	/**
+	 * Returns the foreground color for week day labels.
+	 * 
+	 * @return the foreground color for week day labels
+	 */
+	public Color getWeekDaysForeground() {
+		return weekDaysForeground;
+	}
+
+	/**
+	 * Sets the foreground color for week day labels.
+	 * 
+	 * @param weekDaysFg
+	 *            the foreground color for week day labels
+	 */
+	public void setWeekDaysForeground(Color weekDaysFg) {
+		if (weekDaysFg != null) {
+			this.weekDaysForeground = weekDaysFg;
+			for (int i = 0; i < 7; i++) {
+				weekDayLabels[i].setForeground(weekDaysFg);
+			}
+		}
+	}
+
+	/**
+	 * Returns the foreground color for day picker labels.
+	 * 
+	 * @return the foreground color for day picker labels
+	 */
+	public Color getDayPickerForeground() {
+		return dayPickerForeground;
+	}
+
+	/**
+	 * Sets the foreground color for day picker labels.
+	 * 
+	 * @param dayPickerFg
+	 *            the foreground color for day picker labels
+	 */
+	public void setDayPickerForeground(Color dayPickerFg) {
+		if (dayPickerFg != null) {
+			this.dayPickerForeground = dayPickerFg;
+			refresh();
+		}
+	}
+
+	/**
+	 * Returns the foreground color for selected day label.
+	 * 
+	 * @return the foreground color for selected day label
+	 */
+	public Color getSelectedDayForeground() {
+		return selectedDayForeground;
+	}
+
+	/**
+	 * Sets the foreground color for selected day label.
+	 * 
+	 * @param selectedDayFg
+	 *            the foreground color for selected day label
+	 */
+	public void setSelectedDayForeground(Color selectedDayFg) {
+		if (selectedDayFg != null) {
+			this.selectedDayForeground = selectedDayFg;
+			refresh();
+		}
+	}
+
+	/**
+	 * Sets <code>todayButton</code>'s text.
+	 * 
+	 * @param todayString
+	 *            the text to be displayed in <code>todayButton</code>.
+	 */
 	public void setTodayString(String todayString) {
-		this.today.setText(todayString);
+		getTodayButton().setText(todayString);
+	}
+
+	/**
+	 * Makes <code>todayButton</code> visible or invisible.
+	 * 
+	 * @param visible
+	 *            true to make <code>todayButton</code> visible; false,
+	 *            otherwise
+	 */
+	public void setTodayButtonVisible(boolean visible) {
+		getTodayButton().setVisible(visible);
 	}
 
 	private JLabel createLabelWithBorder(String text) {
 		JLabel label = new JLabel(text);
 		label.setBorder(BorderFactory.createEtchedBorder());
 		label.setHorizontalAlignment(SwingConstants.CENTER);
+		label.setOpaque(true);
 		return label;
 	}
+
+	// Listener for day selection labels
+	private class DaySelectionListener extends MouseAdapter {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			String day = ((JLabel) e.getSource()).getText();
+			if (day.length() > 0) {
+				setSelectedDay(Integer.parseInt(day));
+				firePropertyChange("day", 0,
+						selectedDate.get(Calendar.DAY_OF_MONTH));
+				if (calendar != null) {
+					calendar.dateSelected(getDate());
+				}
+			}
+			refresh();
+		}
+
+	}
+
+	// Listener for navigation labels.
+	private class NavigationListener extends MouseAdapter {
+
+		// Timer used to auto repeat execute() method whenever
+		// the user holds one of the navigation labels.
+		Timer timer;
+
+		public NavigationListener() {
+			timer = new Timer(100, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					execute();
+				}
+			});
+			timer.setInitialDelay(500);
+		}
+
+		public void execute() {
+			// This method must be implemented by subclasses
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			execute();
+			timer.start();
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			timer.stop();
+		}
+
+	}
+
 }
