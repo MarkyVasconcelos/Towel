@@ -4,24 +4,22 @@ import java.util.List;
 
 import javax.swing.JTable;
 
-import test.model.Person;
-
 import com.towel.collections.paginator.ListPaginator;
 import com.towel.collections.paginator.Paginator;
 import com.towel.swing.table.ObjectTableModel;
 
-public class NewSelectTableBuilder<T> {
+public class AdvancedJTableBuilder<T> {
 	private ObjectTableModel<T> model;
 	private Paginator<T> paginator;
 	private JTable table;
 
-	public NewSelectTableBuilder<T> buildWithModel(ObjectTableModel<T> model) {
+	public AdvancedJTableBuilder<T> buildWithModel(ObjectTableModel<T> model) {
 		this.model = model;
 		return this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public NewSelectTableBuilder<T> buildFor(JTable table) {
+	public AdvancedJTableBuilder<T> buildFor(JTable table) {
 		this.table = table;
 		this.model = (ObjectTableModel<T>) table.getModel();
 		return this;
@@ -35,7 +33,7 @@ public class NewSelectTableBuilder<T> {
 	 *            the current data
 	 * @return itself
 	 */
-	public NewSelectTableBuilder<T> withData(List<T> list) {
+	public AdvancedJTableBuilder<T> withData(List<T> list) {
 		return withData(list, 30);
 	}
 
@@ -48,13 +46,13 @@ public class NewSelectTableBuilder<T> {
 	 *            Number of items to be displayed per page
 	 * @return itself
 	 */
-	public NewSelectTableBuilder<T> withData(List<T> list, int resultsPerPage) {
+	public AdvancedJTableBuilder<T> withData(List<T> list, int resultsPerPage) {
 		checkNull(model, "You should call some method to create a TableModel!");
 		this.paginator = new ListPaginator<T>(list, resultsPerPage);
 		return this;
 	}
 
-	public NewSelectTableBuilder<T> withData(Paginator<T> paginator) {
+	public AdvancedJTableBuilder<T> withData(Paginator<T> paginator) {
 		checkNull(model, "You should call some method to create a TableModel!");
 		this.paginator = paginator;
 		return this;

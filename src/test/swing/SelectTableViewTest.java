@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sandbox.NewSelectTable;
-import sandbox.NewSelectTableBuilder;
+import sandbox.AdvancedJTableBuilder;
 import test.model.Person;
 
 import com.towel.el.annotation.AnnotationResolver;
@@ -25,7 +25,7 @@ public class SelectTableViewTest {
 		list.add(new Person("D", 40, true));
 		list.add(new Person("E", 50, true));
 
-		NewSelectTable<Person> st = new NewSelectTableBuilder<Person>()
+		NewSelectTable<Person> st = new AdvancedJTableBuilder<Person>()
 				.buildWithModel(model).withData(list).create();
 		st.showSelectTable();
 	}
