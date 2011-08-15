@@ -228,7 +228,7 @@ public class ObjectTableModel<T> extends AbstractTableModel implements
 	 */
 	public void remove(int idx[]) {
 		for (int i = idx.length - 1; i >= 0; i--) {
-			remove(i);
+			remove(idx[i]);
 		}
 	}
 
