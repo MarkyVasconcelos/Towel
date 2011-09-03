@@ -44,19 +44,20 @@ public class SelectTable<T> {
 	private ObjectTableModel<T> model;
 	private JFrame frame;
 	private JPanel content;
-	private TableRowSorter<ObjectTableModel<T>> rowSorter;
+//	private TableRowSorter<ObjectTableModel<T>> rowSorter;
 	private JLabel clmSearch;
 	private JButton searchButton, selectButton, closeButton;
 	private JTextField filterText;
 	private int colFilterIndex;
 	private JLabel pageLabel;
 	private int selectType;
+	private List<Closable> closableHook;
+	private TableFilter filter;
+	
 	public static final int SINGLE = 0;
 	public static final int LIST = 1;
-	private List<Closable> closableHook;
 
 	private Object selected;
-	
 
 	public SelectTable(FieldResolver cols[], java.util.List<T> data) {
 		this(cols, new ListPaginator<T>(data, 25));
@@ -92,8 +93,8 @@ public class SelectTable<T> {
 		pane.setPreferredSize(new Dimension(width, 400));
 		pane.setMinimumSize(new Dimension(width, 400));
 		content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
-		rowSorter = new TableRowSorter<ObjectTableModel<T>>(model);
-		table.setRowSorter(rowSorter);
+//		rowSorter = new TableRowSorter<ObjectTableModel<T>>(model);
+//		table.setRowSorter(rowSorter);
 		table.getTableHeader().addMouseListener(new ColumnListener());
 		clmSearch = new JLabel();
 		clmSearch.setText((new StringBuilder(String.valueOf(model
@@ -132,6 +133,8 @@ public class SelectTable<T> {
 		});
 
 		table.addMouseListener(new SelectionListener());
+		
+		filter = new TableFilter(table);
 	}
 
 	public JTable getTable() {
@@ -269,7 +272,7 @@ public class SelectTable<T> {
 		RowFilter<ObjectTableModel<T>, Integer> filter = RowFilter.regexFilter(
 				(new StringBuilder("(?i)")).append(text).toString(),
 				new int[] { colFilterIndex });
-		rowSorter.setRowFilter(filter);
+//		rowSorter.setRowFilter(filter);
 	}
 
 	public JPanel getResultScrollPane() {
@@ -351,25 +354,25 @@ public class SelectTable<T> {
 	}
 
 	public void updateSelectedObject() {
-		if (rowSorter != null) {
-			if (selectType == SINGLE) {
-				int objIndex = rowSorter.convertRowIndexToModel(table
-						.getSelectedRows()[0]);
-				selected = model.getValue(objIndex);
-				notifyListeners(new SelectEvent(this, model.getValue(objIndex)));
-			} else {
-				int ids[] = table.getSelectedRows();
-				for (int i = 0; i < ids.length; i++) {
-					ids[i] = rowSorter.convertRowIndexToModel(ids[i]);
-				}
-				selected = model.getList(ids);
-				notifyListeners(new SelectEvent(this, model.getList(ids)));
-			}
-		} else {
+//		if (rowSorter != null) {
+//			if (selectType == SINGLE) {
+//				int objIndex = rowSorter.convertRowIndexToModel(table
+//						.getSelectedRows()[0]);
+//				selected = model.getValue(objIndex);
+//				notifyListeners(new SelectEvent(this, model.getValue(objIndex)));
+//			} else {
+//				int ids[] = table.getSelectedRows();
+//				for (int i = 0; i < ids.length; i++) {
+//					ids[i] = rowSorter.convertRowIndexToModel(ids[i]);
+//				}
+//				selected = model.getList(ids);
+//				notifyListeners(new SelectEvent(this, model.getList(ids)));
+//			}
+//		} else {
 			int objIndex = table.getSelectedRows()[0];
 			selected = model.getValue(objIndex);
 			notifyListeners(new SelectEvent(this, model.getValue(objIndex)));
-		}
+//		}
 		dispose();
 	}
 
