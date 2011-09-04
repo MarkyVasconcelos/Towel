@@ -65,7 +65,7 @@ public class TableFilter extends AbstractTableModel
             if (o1 instanceof String)
                 return Collator.getInstance().compare(o1, o2);
 
-            return ((Comparable) o1).compareTo(o2);
+            return ((Comparable<Object>) o1).compareTo(o2);
         }
     };
 

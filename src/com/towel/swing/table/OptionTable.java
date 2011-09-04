@@ -16,8 +16,6 @@ import com.towel.el.FieldResolver;
 import com.towel.swing.event.ObjectSelectListener;
 import com.towel.swing.event.SelectEvent;
 
-
-
 public class OptionTable<T> implements ActionListener {
 	public static class OptionButton {
 
@@ -51,16 +49,16 @@ public class OptionTable<T> implements ActionListener {
 		this(cols, data, 0);
 	}
 
-	public OptionTable(FieldResolver cols[], Paginator<T> data,
-			int selectType) {
+	public OptionTable(FieldResolver cols[], Paginator<T> data, int selectType) {
 		this.data = data;
-		table = new SelectTable<T>(cols, data, selectType);
+		table = new SelectTable<T>(new ObjectTableModel<T>(cols), data,
+				selectType);
 		listeners = new ArrayList<ObjectSelectListener>();
 		buttons = new ArrayList<OptionButton>();
 		table.addObjectSelectListener(new ObjectSelectListener() {
 			@SuppressWarnings("unchecked")
 			public void notifyObjectSelected(SelectEvent e) {
-				if (((SelectTable) e.getSource()).getSelectType() == 0) {
+				if (((SelectTable<T>) e.getSource()).getSelectType() == SelectTable.SINGLE) {
 					selected = e.getObject();
 				} else {
 					selecteds = (java.util.List<T>) e.getObject();
@@ -96,12 +94,12 @@ public class OptionTable<T> implements ActionListener {
 		table.updateSelectedObject();
 		for (OptionButton ot : buttons) {
 			if (ot.getButton().equals(arg0.getSource())) {
-				if (table.getSelectType() == 0) {
-					notifyListeners(new SelectEvent(this, selected, ot
-							.getActionId()));
+				if (table.getSelectType() == SelectTable.SINGLE) {
+					notifyListeners(new SelectEvent(this, selected,
+							ot.getActionId()));
 				} else {
-					notifyListeners(new SelectEvent(this, selecteds, ot
-							.getActionId()));
+					notifyListeners(new SelectEvent(this, selecteds,
+							ot.getActionId()));
 				}
 				return;
 			}

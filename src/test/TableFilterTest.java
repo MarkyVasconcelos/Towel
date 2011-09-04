@@ -15,26 +15,24 @@ public class TableFilterTest {
 	public static void main(String[] args) {
 		ObjectTableModel<Person> model = new ObjectTableModel<Person>(
 				new AnnotationResolver(Person.class), "name,age,live");
-		
+
 		model.setEditableDefault(true);
-		
+
 		JTable table = new JTable(model);
-		
-		TableFilter filter = new TableFilter(table);
-		
-		model.addAll(new PreData().getSampleList());
-		
-//		JTableView view = new JTableView(model);
-//		view.getFooterModel().setFunction(0, new FuncConcat("-"));
-//		view.getFooterModel().setFunction(1, new FuncSum());
-		
-		
+
+		new TableFilter(table);
+
+		model.addAll(PreData.getSampleList());
+
+		// JTableView view = new JTableView(model);
+		// view.getFooterModel().setFunction(0, new FuncConcat("-"));
+		// view.getFooterModel().setFunction(1, new FuncSum());
+
 		JScrollPane pane = new JScrollPane();
 		pane.setViewportView(table);
-		
+
 		JFrame frame = new JFrame();
 		frame.getContentPane().add(pane);
-		
 
 		frame.pack();
 		frame.setLocationRelativeTo(null);

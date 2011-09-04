@@ -1,9 +1,9 @@
 package com.towel.swing.table;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -19,23 +19,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import com.towel.collections.paginator.ListPaginator;
 import com.towel.collections.paginator.Paginator;
-import com.towel.el.FieldResolver;
-import com.towel.el.annotation.AnnotationResolver;
 import com.towel.io.Closable;
 import com.towel.swing.ModalWindow;
 import com.towel.swing.event.ObjectSelectListener;
 import com.towel.swing.event.SelectEvent;
-
-
 
 public class SelectTable<T> {
 	private List<ObjectSelectListener> listeners;
@@ -44,74 +36,36 @@ public class SelectTable<T> {
 	private ObjectTableModel<T> model;
 	private JFrame frame;
 	private JPanel content;
-//	private TableRowSorter<ObjectTableModel<T>> rowSorter;
-	private JLabel clmSearch;
-	private JButton searchButton, selectButton, closeButton;
-	private JTextField filterText;
-	private int colFilterIndex;
+	private JButton selectButton, closeButton;
 	private JLabel pageLabel;
-	private int selectType;
 	private List<Closable> closableHook;
 	private TableFilter filter;
-	
+
 	public static final int SINGLE = 0;
 	public static final int LIST = 1;
 
-	private Object selected;
+	private int selectType;
 
-	public SelectTable(FieldResolver cols[], java.util.List<T> data) {
-		this(cols, new ListPaginator<T>(data, 25));
+	public SelectTable(ObjectTableModel<T> model2, List<T> list2) {
+		this(model2, new ListPaginator<T>(list2), SINGLE);
 	}
 
-	public SelectTable(AnnotationResolver resolver, String fields,
-			Paginator<T> paginator) {
-		this(resolver.resolve(fields), paginator, SINGLE, 400);
+	public SelectTable(ObjectTableModel<T> model2, Paginator<T> list2) {
+		this(model2, list2, SINGLE);
 	}
 
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator) {
-		this(cols, paginator, SINGLE, 400);
-	}
-
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator, int w) {
-		this(cols, paginator, SINGLE, w);
-	}
-
-	public SelectTable(FieldResolver cols[], Paginator<T> paginator,
-			int selectType, int width) {
-		colFilterIndex = 0;
+	public SelectTable(ObjectTableModel<T> model, Paginator<T> list,
+			int selectType) {
 		listeners = new ArrayList<ObjectSelectListener>();
-		this.selectType = selectType;
-		model = new ObjectTableModel<T>(cols);
-		data = paginator;
-		model.setData(data.nextResult());
-		table = new JTable(model);
 		closableHook = new ArrayList<Closable>();
-		frame = new JFrame("Select");
-		content = new JPanel();
-		JScrollPane pane = new JScrollPane();
-		pane.setViewportView(table);
-		pane.setPreferredSize(new Dimension(width, 400));
-		pane.setMinimumSize(new Dimension(width, 400));
-		content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
-//		rowSorter = new TableRowSorter<ObjectTableModel<T>>(model);
-//		table.setRowSorter(rowSorter);
-		table.getTableHeader().addMouseListener(new ColumnListener());
-		clmSearch = new JLabel();
-		clmSearch.setText((new StringBuilder(String.valueOf(model
-				.getColumnName(colFilterIndex)))).append(":").toString());
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(clmSearch, "West");
-		panel.add(getJTextFieldFilter(), "East");
-		JPanel buttons = new JPanel();
-		buttons.setAlignmentX(.5f);
-		selectButton = new JButton("Select");
-		closeButton = new JButton("Close");
-		buttons.add(selectButton);
-		buttons.add(closeButton);
-		content.add(panel);
-		content.add(pane);
-		content.add(getResultScrollPane());
-		content.add(buttons);
+
+		model.setEditableDefault(false);
+
+		data = list;
+		this.model = model;
+		model.setData(data.nextResult());
+
+		buildBody();
 
 		selectButton.addActionListener(new ActionListener() {
 			@Override
@@ -133,8 +87,40 @@ public class SelectTable<T> {
 		});
 
 		table.addMouseListener(new SelectionListener());
-		
+
 		filter = new TableFilter(table);
+
+		setSelectionType(selectType);
+	}
+
+	private void buildBody() {
+		table = new JTable(model);
+		frame = new JFrame("Select");
+
+		content = new JPanel();
+		pane = new JScrollPane();
+		pane.setViewportView(table);
+		setSize(200, 400);
+
+		content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
+		content.add(pane);
+		content.add(getResultScrollPane());
+		content.add(createCommandButtons());
+	}
+
+	private JPanel createCommandButtons() {
+		JPanel buttons = new JPanel();
+		buttons.setAlignmentX(.5f);
+		selectButton = new JButton("Select");
+		closeButton = new JButton("Close");
+		buttons.add(selectButton);
+		buttons.add(closeButton);
+		return buttons;
+	}
+
+	public void setSize(int width, int height) {
+		pane.setPreferredSize(new Dimension(width, height));
+		pane.setMinimumSize(new Dimension(width, height));
 	}
 
 	public JTable getTable() {
@@ -146,6 +132,7 @@ public class SelectTable<T> {
 	}
 
 	private boolean closed = false;
+	private JScrollPane pane;
 
 	public void close() {
 		if (closed)
@@ -159,17 +146,12 @@ public class SelectTable<T> {
 		selectButton.setText(text);
 	}
 
-	public void setSearchButtonText(String text) {
-		searchButton.setText(text);
-	}
-
 	public void setCloseButtonText(String text) {
 		closeButton.setText(text);
 	}
 
-	public void setButtonsText(String search, String select, String close) {
+	public void setButtonsText(String select, String close) {
 		setSelectButtonText(select);
-		setSearchButtonText(search);
 		setCloseButtonText(close);
 	}
 
@@ -224,6 +206,12 @@ public class SelectTable<T> {
 			listener.notifyObjectSelected(evt.clone());
 	}
 
+	public void setSelectionType(int selectType) {
+		this.selectType = selectType;
+		table.setSelectionMode(this.selectType == SINGLE ? ListSelectionModel.SINGLE_SELECTION
+				: ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+	}
+
 	public int getSelectType() {
 		return selectType;
 	}
@@ -233,46 +221,6 @@ public class SelectTable<T> {
 		if (frame != null) {
 			frame.dispose();
 		}
-	}
-
-	private JTextField getJTextFieldFilter() {
-		filterText = new JTextField(30);
-		filterText.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				filter(filterText.getText());
-			}
-
-			public void insertUpdate(DocumentEvent e) {
-				filter(filterText.getText());
-			}
-
-			public void removeUpdate(DocumentEvent e) {
-				filter(filterText.getText());
-			}
-		});
-
-		searchButton = new JButton("Search");
-		searchButton.setBackground(null);
-
-		filterText.setLayout(new BorderLayout());
-		filterText.add(searchButton, BorderLayout.EAST);
-
-		searchButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				data.filter(filterText.getText(), model
-						.getColumnResolver(colFilterIndex));
-				firstResult();
-			}
-		});
-
-		return filterText;
-	}
-
-	private void filter(String text) {
-		RowFilter<ObjectTableModel<T>, Integer> filter = RowFilter.regexFilter(
-				(new StringBuilder("(?i)")).append(text).toString(),
-				new int[] { colFilterIndex });
-//		rowSorter.setRowFilter(filter);
 	}
 
 	public JPanel getResultScrollPane() {
@@ -325,8 +273,8 @@ public class SelectTable<T> {
 			data.setCurrentPage(data.getCurrentPage() - 2);
 			model.setData(data.nextResult());
 			pageLabel.setText((new StringBuilder(String.valueOf(String
-					.valueOf(data.getCurrentPage())))).append("/").append(
-					data.getMaxPage() + 1).toString());
+					.valueOf(data.getCurrentPage())))).append("/")
+					.append(data.getMaxPage() + 1).toString());
 			return;
 		}
 	}
@@ -338,8 +286,8 @@ public class SelectTable<T> {
 			}
 			model.setData(data.nextResult());
 			pageLabel.setText((new StringBuilder(String.valueOf(String
-					.valueOf(data.getCurrentPage())))).append("/").append(
-					data.getMaxPage() + 1).toString());
+					.valueOf(data.getCurrentPage())))).append("/")
+					.append(data.getMaxPage() + 1).toString());
 		} catch (Exception e) {
 			return;
 		}
@@ -354,39 +302,22 @@ public class SelectTable<T> {
 	}
 
 	public void updateSelectedObject() {
-//		if (rowSorter != null) {
-//			if (selectType == SINGLE) {
-//				int objIndex = rowSorter.convertRowIndexToModel(table
-//						.getSelectedRows()[0]);
-//				selected = model.getValue(objIndex);
-//				notifyListeners(new SelectEvent(this, model.getValue(objIndex)));
-//			} else {
-//				int ids[] = table.getSelectedRows();
-//				for (int i = 0; i < ids.length; i++) {
-//					ids[i] = rowSorter.convertRowIndexToModel(ids[i]);
-//				}
-//				selected = model.getList(ids);
-//				notifyListeners(new SelectEvent(this, model.getList(ids)));
-//			}
-//		} else {
-			int objIndex = table.getSelectedRows()[0];
-			selected = model.getValue(objIndex);
-			notifyListeners(new SelectEvent(this, model.getValue(objIndex)));
-//		}
+		int[] objIndex = table.getSelectedRows();
+		int[] realIdx = filter.getModelRows(objIndex);
+
+		if (objIndex.length == 1)
+			notifyListeners(new SelectEvent(this, model.getValue(realIdx[0])));
+		else {
+			List<T> selected = new ArrayList<T>();
+			for (int i : realIdx)
+				selected.add(model.getValue(i));
+			notifyListeners(new SelectEvent(this, selected));
+		}
 		dispose();
 	}
 
 	public void notifyDataChanged() {
 		model.fireTableDataChanged();
-	}
-
-	private class ColumnListener extends MouseAdapter {
-		public void mouseClicked(MouseEvent arg0) {
-			colFilterIndex = table.columnAtPoint(arg0.getPoint());
-			clmSearch.setText((new StringBuilder(String.valueOf(model
-					.getColumnName(colFilterIndex)))).append(":").toString());
-			filterText.setText("");
-		}
 	}
 
 	private class SelectionListener extends MouseAdapter {
@@ -398,11 +329,11 @@ public class SelectTable<T> {
 		}
 	}
 
-	public Object getSelectedObject() {
-		return selected;
-	}
-
 	public TableModel getModel() {
 		return model;
+	}
+
+	public void setFont(Font font) {
+		table.setFont(font);
 	}
 }
