@@ -12,7 +12,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-import com.towel.img.LoopImage;
+import com.towel.graphics.LoopImage;
 
 /**
  * A panel that contains a background image. The background image is

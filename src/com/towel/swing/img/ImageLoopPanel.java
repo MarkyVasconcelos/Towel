@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-import com.towel.img.LoopImage;
+import com.towel.graphics.LoopImage;
 
 
 @Deprecated

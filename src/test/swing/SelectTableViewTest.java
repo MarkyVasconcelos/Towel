@@ -2,10 +2,12 @@ package test.swing;
 
 import java.awt.Font;
 import java.util.List;
+import java.util.Locale;
 
 import test.model.Person;
 import test.model.PreData;
 
+import com.towel.cfg.TowelConfig;
 import com.towel.collections.paginator.ListPaginator;
 import com.towel.el.annotation.AnnotationResolver;
 import com.towel.swing.event.ObjectSelectListener;
@@ -22,6 +24,8 @@ public class SelectTableViewTest {
 
 		List<Person> list = PreData.getSampleList(100);
 
+		TowelConfig.getInstance().setLocale(new Locale("pt","BR"));
+		
 		SelectTable<Person> st = new SelectTable<Person>(model,
 				new ListPaginator<Person>(list, 20));
 		st.setSelectionType(SelectTable.SINGLE);

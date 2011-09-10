@@ -32,12 +32,17 @@ import javax.swing.JButton;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
+import com.towel.cfg.TowelConfig;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Properties;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -50,6 +55,7 @@ import java.text.SimpleDateFormat;
  * @modified Eric Yuzo
  */
 public class DatePicker extends JPanel {
+	private static final String TODAY_TXT_ATTR = "today_txt";
 
 	private CalendarView calendar;
 
@@ -150,7 +156,7 @@ public class DatePicker extends JPanel {
 	 */
 	public DatePicker(CalendarView cal, int day, int month, int year) {
 		calendar = cal;
-		locale = Locale.getDefault();
+		locale = TowelConfig.getInstance().getDefaultLocale();
 
 		selectedDate = getToday();
 		if (day > 0) {
@@ -161,6 +167,19 @@ public class DatePicker extends JPanel {
 
 		init();
 		refresh();
+	}
+	
+	private void updateButtonTxt(Locale locale) {
+		InputStream is = getClass().getResourceAsStream(
+				"/res/strings_" + locale.toString() + ".properties");
+		Properties props = new Properties();
+		try {
+			props.load(is);
+			is.close();
+			todayButton.setText(props.getProperty(TODAY_TXT_ATTR));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void init() {
@@ -180,6 +199,7 @@ public class DatePicker extends JPanel {
 		add(getTodayButton(), BorderLayout.SOUTH);
 
 		updateWeekDays(locale);
+		updateButtonTxt(locale);
 	}
 
 	private JPanel getMonthPanel() {

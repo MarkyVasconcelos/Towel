@@ -2,6 +2,7 @@ package test.el;
 
 import test.model.EPerson;
 import test.model.Person;
+import test.model.PersonHolder;
 
 import com.towel.bean.DefaultFormatter;
 import com.towel.el.FieldResolver;
@@ -37,6 +38,16 @@ public class FieldAcessHandlerTest {
 				"Mark"));
 	}
 
+	public void testHierarchyFieldAccess2() {
+		PersonHolder holder = new PersonHolder();
+		holder.setPerson(new EPerson("Mark", 19));
+
+		FieldHandler handler = new FieldHandler();
+		handler.resolveField(PersonHolder.class, "person.name");
+		System.out.println(handler.getValue(holder, new DefaultFormatter())
+				.equals("Mark"));
+	}
+
 	public void testHierarchyInnerFieldAccess() {
 		Person p = new EPerson("Mark", 19);
 		Person other = new EPerson("Marcos", 40);
@@ -64,7 +75,7 @@ public class FieldAcessHandlerTest {
 		FieldResolver[] res = solver.resolve("parent.name");
 		System.out.println(res[0].getValue(p).equals("Markk"));
 	}
-	
+
 	public void testAnnotationResolverHierarq() {
 		EPerson p = new EPerson("Mark", 19);
 
@@ -82,5 +93,6 @@ public class FieldAcessHandlerTest {
 		tests.testAnnotationResolver();
 		tests.testAnnotationResolverInner();
 		tests.testAnnotationResolverHierarq();
+		tests.testHierarchyFieldAccess2();
 	}
 }

@@ -17,9 +17,9 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import com.towel.other.Pair;
 import com.towel.role.RoleManager;
 import com.towel.swing.ModalWindow;
+import com.towel.util.Pair;
 
 @SuppressWarnings("unused")
 public class LoginScreen {

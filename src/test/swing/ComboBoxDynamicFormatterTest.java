@@ -10,8 +10,8 @@ import test.model.Person;
 import com.towel.awt.ann.Action;
 import com.towel.awt.ann.ActionManager;
 import com.towel.bean.DynamicFormatter;
-import com.towel.combo.swing.ObjectComboBoxModel;
 import com.towel.el.FieldResolver;
+import com.towel.swing.combo.ObjectComboBoxModel;
 
 public class ComboBoxDynamicFormatterTest extends JFrame {
 	private ObjectComboBoxModel<Person> model;

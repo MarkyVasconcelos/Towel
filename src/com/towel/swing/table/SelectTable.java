@@ -8,8 +8,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -22,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableModel;
 
+import com.towel.cfg.TowelConfig;
 import com.towel.collections.paginator.ListPaginator;
 import com.towel.collections.paginator.Paginator;
 import com.towel.io.Closable;
@@ -30,6 +35,9 @@ import com.towel.swing.event.ObjectSelectListener;
 import com.towel.swing.event.SelectEvent;
 
 public class SelectTable<T> {
+	private static final String CLOSE_TXT_ATTR = "close_txt_attr";
+	private static final String SELECT_TXT_ATTR = "select_txt_attr";
+
 	private List<ObjectSelectListener> listeners;
 	private JTable table;
 	private Paginator<T> data;
@@ -91,6 +99,8 @@ public class SelectTable<T> {
 		filter = new TableFilter(table);
 
 		setSelectionType(selectType);
+		
+		setLocale(TowelConfig.getInstance().getDefaultLocale());
 	}
 
 	private void buildBody() {
@@ -148,6 +158,26 @@ public class SelectTable<T> {
 
 	public void setCloseButtonText(String text) {
 		closeButton.setText(text);
+	}
+
+	public void setLocale(Locale locale) {
+		filter.setLocale(locale);
+
+		InputStream is = getClass().getResourceAsStream(
+				"/res/strings_" + locale.toString() + ".properties");
+		Properties props = new Properties();
+		try {
+			props.load(is);
+			is.close();
+			setOptions(props);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void setOptions(Properties props) {
+		setSelectButtonText(props.getProperty(SELECT_TXT_ATTR));
+		setCloseButtonText(props.getProperty(CLOSE_TXT_ATTR));
 	}
 
 	public void setButtonsText(String select, String close) {
