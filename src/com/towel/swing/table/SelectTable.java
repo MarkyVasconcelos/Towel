@@ -96,11 +96,14 @@ public class SelectTable<T> {
 
 		table.addMouseListener(new SelectionListener());
 
-		filter = new TableFilter(table);
-
 		setSelectionType(selectType);
-		
+
 		setLocale(TowelConfig.getInstance().getDefaultLocale());
+	}
+
+	public void useTableFilter() {
+		filter = new TableFilter(table);
+		filter.setLocale(TowelConfig.getInstance().getDefaultLocale());
 	}
 
 	private void buildBody() {
@@ -110,7 +113,6 @@ public class SelectTable<T> {
 		content = new JPanel();
 		pane = new JScrollPane();
 		pane.setViewportView(table);
-		setSize(200, 400);
 
 		content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
 		content.add(pane);
@@ -161,8 +163,6 @@ public class SelectTable<T> {
 	}
 
 	public void setLocale(Locale locale) {
-		filter.setLocale(locale);
-
 		InputStream is = getClass().getResourceAsStream(
 				"/res/strings_" + locale.toString() + ".properties");
 		Properties props = new Properties();
@@ -333,7 +333,8 @@ public class SelectTable<T> {
 
 	public void updateSelectedObject() {
 		int[] objIndex = table.getSelectedRows();
-		int[] realIdx = filter.getModelRows(objIndex);
+		int[] realIdx = filter == null ? objIndex : filter
+				.getModelRows(objIndex);
 
 		if (objIndex.length == 1)
 			notifyListeners(new SelectEvent(this, model.getValue(realIdx[0])));
@@ -365,5 +366,10 @@ public class SelectTable<T> {
 
 	public void setFont(Font font) {
 		table.setFont(font);
+	}
+
+	public void fitColumnsToHeader() {
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		Resizer.fitColumnsByHeader(0, table);
 	}
 }

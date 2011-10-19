@@ -9,27 +9,6 @@ import com.towel.el.annotation.Resolvable;
 
 public class Person {
 	private String name;
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public int getAge() {
-		return age;
-	}
-
-	public void setAge(int age) {
-		this.age = age;
-	}
-
-	public void setLive(boolean live) {
-		this.live = live;
-	}
-
 	private int age;
 	private boolean live;
 	@Resolvable(colName = "Birth", formatter = DateFormatter.class)
@@ -91,6 +70,26 @@ public class Person {
 			return cal;
 		}
 
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public void setLive(boolean live) {
+		this.live = live;
 	}
 
 	public boolean isLive() {

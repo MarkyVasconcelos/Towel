@@ -1,6 +1,8 @@
 package com.towel.swing.table;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableCellRenderer;
@@ -42,14 +44,14 @@ public class Resizer {
 			renderer = tabela.getTableHeader().getDefaultRenderer();
 		}
 
-		Component comp = renderer.getTableCellRendererComponent(tabela, col
-				.getHeaderValue(), false, false, 0, 0);
+		Component comp = renderer.getTableCellRendererComponent(tabela,
+				col.getHeaderValue(), false, false, 0, 0);
 		width = comp.getPreferredSize().width;
 
 		for (int r = 0; r < tabela.getRowCount(); r++) {
 			renderer = tabela.getCellRenderer(r, coluna);
-			comp = renderer.getTableCellRendererComponent(tabela, tabela
-					.getValueAt(r, coluna), false, false, r, coluna);
+			comp = renderer.getTableCellRendererComponent(tabela,
+					tabela.getValueAt(r, coluna), false, false, r, coluna);
 			width = Math.max(width, comp.getPreferredSize().width);
 		}
 
@@ -57,9 +59,26 @@ public class Resizer {
 		col.setPreferredWidth(width);
 	}
 
+	public static void fitColumnsByHeader(int margin, JTable table) {
+		TableColumnModel colModel = table.getColumnModel();
+		for (int i = 0; i < colModel.getColumnCount(); i++)
+			fitColumnByHeader(i, margin, table);
+	}
+
+	public static void fitColumnByHeader(int column, int margin, JTable table) {
+		TableColumnModel colModel = table.getColumnModel();
+		TableColumn col = colModel.getColumn(column);
+		String x = col.getHeaderValue().toString();
+		FontMetrics metrics = table.getFontMetrics(table.getFont());
+		int width = metrics.stringWidth(x);
+		col.setMinWidth(width);
+//		col.setPreferredWidth(width);
+	}
+
 	public static void fitAllColumns(JTable table) {
 		TableColumnModel colModel = table.getColumnModel();
 		for (int i = 0; i < colModel.getColumnCount(); i++)
 			fitColumn(i, 0, table);
 	}
+
 }
