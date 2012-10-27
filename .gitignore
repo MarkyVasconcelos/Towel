@@ -1,6 +1,5 @@
-classes
-javadoc
-*.jar
-*.zip
-bin
+target
+.project
+.classpath
+.settings
 
