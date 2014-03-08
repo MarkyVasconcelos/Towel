@@ -1,9 +1,6 @@
 package com.towel.swing.img;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.TexturePaint;
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,8 +19,8 @@ import com.towel.graphics.LoopImage;
  */
 public class JImagePanel extends JPanel {
 	private LoopImage images;
-	// private BufferedImage image = null;
 	private FillType fillType = FillType.RESIZE;
+    private volatile boolean loop = true;
 
 	/**
 	 * Creates a new panel with the given background image.
@@ -32,7 +29,6 @@ public class JImagePanel extends JPanel {
 	 *            The background image.
 	 */
 	public JImagePanel(BufferedImage img) {
-		// setImage(img);
 		images = new LoopImage(0, img);
 	}
 
@@ -53,7 +49,7 @@ public class JImagePanel extends JPanel {
 	/**
 	 * Creates a new panel with the given background image.
 	 * 
-	 * @param img
+	 * @param imgSrc
 	 *            The background image.
 	 * @throws IOException
 	 *             , if the image file is not found.
@@ -65,14 +61,14 @@ public class JImagePanel extends JPanel {
 	/**
 	 * Default constructor, should be used only for sub-classes
 	 */
-	protected JImagePanel() {
+	public JImagePanel() {
 
 	}
 
 	/**
 	 * Creates a new panel with the given background image.
 	 * 
-	 * @param img
+	 * @param fileName
 	 *            The background image.
 	 * @throws IOException
 	 *             , if the image file is not found.
@@ -88,11 +84,7 @@ public class JImagePanel extends JPanel {
 	 *            The new image to set.
 	 */
 	public final void setImage(BufferedImage img) {
-		if (img == null)
-			throw new NullPointerException("Buffered image cannot be null!");
-
-		this.images = new LoopImage(0, img);
-		// this.image = img;
+        this.images = img == null ? null : new LoopImage(0, img);
 		invalidate();
 	}
 
@@ -105,19 +97,25 @@ public class JImagePanel extends JPanel {
 	 *             If the file does not exist or is invalid.
 	 */
 	public void setImage(File img) throws IOException {
-		setImage(ImageIO.read(img));
+        if (img == null)
+            images = null;
+        else
+		    setImage(ImageIO.read(img));
 	}
 
 	/**
 	 * Changes the image panel image.
 	 * 
-	 * @param img
+	 * @param fileName
 	 *            The new image to set.
 	 * @throws IOException
 	 *             If the file does not exist or is invalid.
 	 */
 	public void setImage(String fileName) throws IOException {
-		setImage(new File(fileName));
+        if (fileName == null)
+            images = null;
+        else
+		    setImage(new File(fileName));
 	}
 
 	/**
@@ -126,12 +124,15 @@ public class JImagePanel extends JPanel {
 	 * @return The associated image.
 	 */
 	public BufferedImage getImage() {
-		return images.getCurrent();
+		return images == null ? null : images.getCurrent();
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
+        if (images == null)
+            return;
+
 		Graphics2D g2d = (Graphics2D) g.create();
 		fillType.drawImage(this, g2d, images.getCurrent());
 		g2d.dispose();
@@ -207,13 +208,24 @@ public class JImagePanel extends JPanel {
 				BufferedImage image);
 	}
 
-	private class Looper extends Thread {
+    @Override
+    public Dimension getPreferredSize() {
+        return images == null ? new Dimension() : images.getSize();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        loop = false;
+        super.finalize();
+    }
+
+    private class Looper extends Thread {
 		public Looper() {
 			setDaemon(true);
 		}
 
 		public void run() {
-			while (true) {
+			while (loop) {
 				repaint();
 				try {
 					sleep(images.tick);

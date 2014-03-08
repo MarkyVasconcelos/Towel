@@ -1,6 +1,6 @@
 package com.towel.graphics;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class LoopImage {
@@ -37,4 +37,8 @@ public class LoopImage {
 		updateTick();
 		return imgs[currentIndex];
 	}
+
+    public Dimension getSize() {
+        return new Dimension(imgs[currentIndex].getWidth(), imgs[currentIndex].getHeight());
+    }
 }
