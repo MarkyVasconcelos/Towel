@@ -1,4 +1,7 @@
-This project is under LGPL 3.0 license.
+This project is under LGPL 3.0 license. (You can use it freely, embeed as you want only if you attach a note that part of the work is under this license and give a link to this project)
+
+Github did removed the downloads section, but the link is still acessible: https://github.com/MarkyVasconcelos/Towel/downloads
+And this is a direct link to the lateste release: https://github.com/downloads/MarkyVasconcelos/Towel/towel-v1.2.2.jar
 
 Towel, is a project to make some common tasks easy for Swing developers such as:
 Models for Components;
