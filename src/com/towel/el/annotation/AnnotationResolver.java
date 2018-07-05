@@ -93,8 +93,10 @@ public class AnnotationResolver {
 		String fields[] = fieldName.split("[.]");
 
 		Field last = new ClassIntrospector(clazz).getField(fields[0]);
-		for (int i = 1; i < fields.length; i++)
-			last = last.getType().getDeclaredField(fields[i]);
+		for (int i = 1; i < fields.length; i++){
+			// (05.07.2018 AM)NOTE: On subfields should also checked for Superclasses.
+			last = new ClassIntrospector(last.getType()).getField(fields[i]);
+		}
 
 		FieldResolver resolver = null;
 		Resolvable resolvable = last.getAnnotation(Resolvable.class);
